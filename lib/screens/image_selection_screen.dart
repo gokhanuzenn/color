@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:color_world/screens/coloring_canvas_screen.dart';
+import 'package:color_world/screens/ad_transition_screen.dart';
 
 class ColoringTemplate {
   final String id;
@@ -111,7 +111,6 @@ class TemplateCard extends StatelessWidget {
   final Color themeColor;
 
   const TemplateCard({
-    super.key,
     required this.template,
     required this.themeColor,
   });
@@ -123,7 +122,7 @@ class TemplateCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ColoringCanvasScreen(
+            builder: (context) => AdTransitionScreen(
               assetPath: template.assetPath,
               templateId: template.id,
             ),
