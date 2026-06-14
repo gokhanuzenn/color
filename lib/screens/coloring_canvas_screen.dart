@@ -17,6 +17,7 @@ enum DrawingTool {
   komur,
   sprey,
   kuru_firca,
+  yagli_boya, // New tool
 }
 
 abstract class PaintOp {
@@ -132,6 +133,11 @@ class PathOp extends PaintOp {
             }
           }
         }
+        break;
+      case DrawingTool.yagli_boya:
+        paint.strokeWidth = strokeWidth * 1.5;
+        paint.strokeCap = StrokeCap.square;
+        _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 0.8));
         break;
       default:
         _drawBasic(canvas, paint);
@@ -352,8 +358,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
     final subTools = currentMenuType == 'Kalem'
         ? [
             {'tool': DrawingTool.kursun, 'label': 'Kursun'},
+            {'tool': DrawingTool.tukenmez, 'label': 'Tukenmez'},
             {'tool': DrawingTool.keceli, 'label': 'Keceli'},
-            {'tool': DrawingTool.jel_kalem, 'label': 'Jel Kalem'},
+            {'tool': DrawingTool.jel_kalem, 'label': 'Jel'},
             {'tool': DrawingTool.komur, 'label': 'Komur'},
             {'tool': DrawingTool.boya_kalemi, 'label': 'Boya'},
           ]
@@ -361,6 +368,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
             {'tool': DrawingTool.firca_classic, 'label': 'Klasik'},
             {'tool': DrawingTool.sulu_firca, 'label': 'Sulu'},
             {'tool': DrawingTool.sprey, 'label': 'Sprey'},
+            {'tool': DrawingTool.yagli_boya, 'label': 'Yagli'},
             {'tool': DrawingTool.kuru_firca, 'label': 'Kuru'},
             {'tool': DrawingTool.gradyan_fircasi, 'label': 'Gradyan'},
           ];
@@ -399,7 +407,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
             setState(() {
               showSubToolMenu = true;
               currentMenuType = label;
-              activeTool = tool;
+              // Don't change activeTool immediately if menu is just opening?
+              // Actually for UX usually we select the first one or keep current if valid
             });
           }
         } else {
@@ -460,9 +469,7 @@ class ColoringPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.saveLayer(Rect.fromLTWH(0, 0, size.width, size.height), Paint());
-    
-    // Draw drawing operations
+    // Draw drawing operations first
     for (var op in operations) {
       op.draw(canvas, 1.0, secondaryColor);
     }
@@ -470,16 +477,16 @@ class ColoringPainter extends CustomPainter {
     // Draw template on top with multiply blend mode
     if (template != null) {
       final paint = Paint()..blendMode = BlendMode.multiply;
-      paintImage(
-        canvas: canvas,
-        rect: Rect.fromLTWH(0, 0, size.width, size.height),
-        image: template!,
-        fit: BoxFit.contain,
-         // paint: paint,
+      final Rect destRect = Rect.fromLTWH(0, 0, size.width, size.height);
+      
+      // Use canvas.drawImageRect with Paint that has blendMode = multiply
+      canvas.drawImageRect(
+        template!,
+        Rect.fromLTWH(0, 0, template!.width.toDouble(), template!.height.toDouble()),
+        destRect,
+        paint,
       );
     }
-    
-    canvas.restore();
   }
 
   @override
