@@ -362,7 +362,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFFFDFBF7),
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero, side: BorderSide(color: Color(0xFF2D2D2D), width: 3)),
-        title: const Text("Metin Ekle", style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.black)),
+        title: const Text("Metin Ekle", style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900)),
         content: TextField(
           controller: controller,
           autofocus: true,
@@ -424,7 +424,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
       backgroundColor: const Color(0xFFFDFBF7),
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDFBF7), 
-        title: const Text('BOYAMA DUNYASI', style: TextStyle(fontWeight: FontWeight.black, color: Color(0xFF2D2D2D), fontSize: 18, letterSpacing: 1.5)), 
+        title: const Text('BOYAMA DUNYASI', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D), fontSize: 18, letterSpacing: 1.5)), 
         elevation: 0, 
         iconTheme: const IconThemeData(color: Color(0xFF2D2D2D)), 
         actions: [
@@ -616,7 +616,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
             child: Icon(icon, color: const Color(0xFF2D2D2D)),
           ),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.black, color: Color(0xFF2D2D2D))),
+          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D))),
         ],
       ),
     );
@@ -632,7 +632,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
           border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
           boxShadow: const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(3, 3))],
         ),
-        child: Text(label, style: const TextStyle(fontWeight: FontWeight.black, fontSize: 12)),
+        child: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
       ),
     );
   }
