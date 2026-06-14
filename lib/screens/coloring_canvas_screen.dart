@@ -346,8 +346,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                 transformationController: _transformationController,
                 minScale: 1.0,
                 maxScale: 10.0,
-                panEnabled: true,
-                scaleEnabled: true,
+                panEnabled: _pointerCount > 1,
+                scaleEnabled: _pointerCount > 1,
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: templateImage != null 
@@ -476,6 +476,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     final subTools = currentMenuType == 'Kalem'
         ? [
             {'tool': DrawingTool.kursun, 'label': 'Kursun'},
+            {'tool': DrawingTool.tukenmez, 'label': 'Tukenmez'},
             {'tool': DrawingTool.keceli, 'label': 'Keceli'},
             {'tool': DrawingTool.boya_kalemi, 'label': 'Boya'},
           ]
