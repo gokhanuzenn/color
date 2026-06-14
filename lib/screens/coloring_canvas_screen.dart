@@ -18,7 +18,6 @@ enum DrawingTool {
   sprey,
   kuru_firca,
   yagli_boya,
-  hand, // Added for Zoom/Pan mode
 }
 
 abstract class PaintOp {
@@ -56,23 +55,58 @@ class PathOp extends PaintOp {
     }
 
     switch (tool) {
-      case DrawingTool.sulu_firca:
-        paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-        paint.color = color.withOpacity(finalOpacity * 0.2);
-        paint.strokeWidth = strokeWidth * 2.5;
+      case DrawingTool.kursun:
+        // Thin, graphite texture: low opacity, slightly sharper cap
+        paint.strokeWidth = strokeWidth * 0.4;
+        paint.color = color.withOpacity(finalOpacity * 0.7);
+        _drawBasic(canvas, paint);
+        // Add a bit of "grain"
+        final rnd = math.Random(42);
+        for (int i = 0; i < points.length - 1; i++) {
+          if (points[i] != null && points[i + 1] != null && rnd.nextDouble() > 0.5) {
+            canvas.drawCircle(points[i]!, strokeWidth * 0.2, paint..color = color.withOpacity(finalOpacity * 0.1));
+          }
+        }
+        break;
+
+      case DrawingTool.tukenmez:
+        // Thin, consistent, high opacity
+        paint.strokeWidth = strokeWidth * 0.3;
+        paint.color = color.withOpacity(finalOpacity * 0.95);
         _drawBasic(canvas, paint);
         break;
+
+      case DrawingTool.keceli:
+        // Thick, marker-like: square cap, medium opacity that builds up
+        paint.strokeWidth = strokeWidth * 1.2;
+        paint.strokeCap = StrokeCap.square;
+        paint.color = color.withOpacity(finalOpacity * 0.5);
+        _drawBasic(canvas, paint);
+        break;
+
+      case DrawingTool.sulu_firca:
+        // Translucent watercolor: soft blur, very low opacity, wide
+        paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+        paint.color = color.withOpacity(finalOpacity * 0.15);
+        paint.strokeWidth = strokeWidth * 2.5;
+        _drawBasic(canvas, paint);
+        // Inner core for more "wet" look
+        _drawBasic(canvas, paint..strokeWidth = strokeWidth * 1.5..color = color.withOpacity(finalOpacity * 0.05));
+        break;
+
       case DrawingTool.boya_kalemi:
+        // Waxy texture: noisy lines
         final rnd = math.Random(42);
         for (int i = 0; i < points.length - 1; i++) {
           if (points[i] != null && points[i + 1] != null) {
-            for (int j = 0; j < 5; j++) {
-              Offset off = Offset(rnd.nextDouble() * 4 - 2, rnd.nextDouble() * 4 - 2);
-              canvas.drawLine(points[i]! + off, points[i + 1]! + off, paint..color = color.withOpacity(finalOpacity * 0.6));
+            for (int j = 0; j < 6; j++) {
+              Offset off = Offset(rnd.nextDouble() * 5 - 2.5, rnd.nextDouble() * 5 - 2.5);
+              canvas.drawLine(points[i]! + off, points[i + 1]! + off, paint..color = color.withOpacity(finalOpacity * 0.5)..strokeWidth = strokeWidth * 0.3);
             }
           }
         }
         break;
+
       case DrawingTool.gradyan_fircasi:
         if (points.length > 1) {
           for (int i = 0; i < points.length - 1; i++) {
@@ -80,69 +114,80 @@ class PathOp extends PaintOp {
               paint.shader = ui.Gradient.linear(
                 points[i]!,
                 points[i+1]!,
-                [secondaryColor.withOpacity(finalOpacity * 0.4), color.withOpacity(finalOpacity * 0.6)],
+                [secondaryColor.withOpacity(finalOpacity * 0.5), color.withOpacity(finalOpacity * 0.7)],
               );
               canvas.drawLine(points[i]!, points[i+1]!, paint);
             }
           }
         }
         break;
+
       case DrawingTool.jel_kalem:
-        paint.strokeWidth = strokeWidth * 0.8;
-        _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 0.9));
-        // Add a slight highlight effect for gel
+        // Smooth liquid: consistent line + white highlight core
+        paint.strokeWidth = strokeWidth * 0.6;
+        _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 1.0));
         final highlightPaint = Paint()
-          ..color = Colors.white.withOpacity(finalOpacity * 0.3)
-          ..strokeWidth = strokeWidth * 0.2
+          ..color = Colors.white.withOpacity(finalOpacity * 0.4)
+          ..strokeWidth = strokeWidth * 0.15
           ..strokeCap = StrokeCap.round
           ..style = PaintingStyle.stroke;
         _drawBasic(canvas, highlightPaint);
         break;
+
       case DrawingTool.komur:
+        // Grainy, soft-edged: charcoal
         final rnd = math.Random(13);
-        paint.strokeWidth = strokeWidth;
         for (int i = 0; i < points.length - 1; i++) {
           if (points[i] != null && points[i + 1] != null) {
-            for (int j = 0; j < 10; j++) {
-              Offset off = Offset(rnd.nextDouble() * 6 - 3, rnd.nextDouble() * 6 - 3);
-              canvas.drawCircle(points[i]! + off, rnd.nextDouble() * 2, paint..color = color.withOpacity(finalOpacity * 0.3));
+            for (int j = 0; j < 12; j++) {
+              Offset off = Offset(rnd.nextDouble() * 8 - 4, rnd.nextDouble() * 8 - 4);
+              canvas.drawCircle(points[i]! + off, rnd.nextDouble() * 3, paint..color = color.withOpacity(finalOpacity * 0.2)..style = PaintingStyle.fill);
             }
           }
         }
         break;
+
       case DrawingTool.sprey:
+        // Particle distribution
         final rnd = math.Random();
         for (int i = 0; i < points.length; i++) {
           if (points[i] != null) {
-            for (int j = 0; j < 15; j++) {
-              double r = rnd.nextDouble() * strokeWidth * 2;
+            for (int j = 0; j < 20; j++) {
+              double r = rnd.nextDouble() * strokeWidth * 2.5;
               double angle = rnd.nextDouble() * 2 * math.pi;
               Offset off = Offset(r * math.cos(angle), r * math.sin(angle));
-              canvas.drawCircle(points[i]! + off, rnd.nextDouble() * 1.5, paint..color = color.withOpacity(finalOpacity * 0.2));
+              canvas.drawCircle(points[i]! + off, rnd.nextDouble() * 2, paint..color = color.withOpacity(finalOpacity * 0.15)..style = PaintingStyle.fill);
             }
           }
         }
         break;
+
       case DrawingTool.kuru_firca:
-        paint.strokeWidth = strokeWidth;
+        // Scratchy and broken
+        paint.strokeWidth = strokeWidth * 0.2;
         final rnd = math.Random(7);
         for (int i = 0; i < points.length - 1; i++) {
           if (points[i] != null && points[i + 1] != null) {
-            for (int j = 0; j < 3; j++) {
-               Offset off = Offset(rnd.nextDouble() * 2 - 1, rnd.nextDouble() * 2 - 1);
-               canvas.drawLine(points[i]! + off, points[i+1]! + off, paint..color = color.withOpacity(finalOpacity * 0.4));
+            for (int j = 0; j < 4; j++) {
+               Offset off = Offset(rnd.nextDouble() * 4 - 2, rnd.nextDouble() * 4 - 2);
+               if (rnd.nextDouble() > 0.2) {
+                 canvas.drawLine(points[i]! + off, points[i+1]! + off, paint..color = color.withOpacity(finalOpacity * 0.3));
+               }
             }
           }
         }
         break;
+
       case DrawingTool.yagli_boya:
-        paint.strokeWidth = strokeWidth * 1.5;
-        paint.strokeCap = StrokeCap.square;
-        _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 0.8));
+        // Thick and opaque
+        paint.strokeWidth = strokeWidth * 1.8;
+        paint.strokeCap = StrokeCap.butt;
+        _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 0.9));
+        // Add "impasto" texture lines
+        _drawBasic(canvas, paint..strokeWidth = strokeWidth * 0.4..color = Colors.white.withOpacity(finalOpacity * 0.1));
         break;
-      case DrawingTool.hand:
-        // Do nothing for hand tool
-        break;
+
+      case DrawingTool.firca_classic:
       default:
         _drawBasic(canvas, paint);
     }
@@ -177,7 +222,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   Color selectedColor = const Color(0xFFE94E77);
   Color secondaryColor = const Color(0xFFF6AD55);
   
-  // Tool Memory
   DrawingTool activeTool = DrawingTool.kursun;
   DrawingTool lastKalemTool = DrawingTool.kursun;
   DrawingTool lastFircaTool = DrawingTool.firca_classic;
@@ -189,6 +233,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   final TransformationController _transformationController = TransformationController();
   final List<List<PaintOp>> _undoStack = [];
   final List<List<PaintOp>> _redoStack = [];
+
+  // Track pointers to distinguish between drawing and zoom/pan
+  int _pointerCount = 0;
 
   final List<Color> palette = [
     const Color(0xFF2D2D2D), const Color(0xFFE94E77), const Color(0xFFFF6B6B),
@@ -258,8 +305,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
 
   @override
   Widget build(BuildContext context) {
-    bool isHandMode = activeTool == DrawingTool.hand;
-
     return Scaffold(
       backgroundColor: const Color(0xFFFDFBF7),
       appBar: AppBar(
@@ -275,47 +320,52 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
       body: Column(
         children: [
           Expanded(
-            child: Container(
-              color: Colors.white,
-              child: InteractiveViewer(
-                transformationController: _transformationController,
-                minScale: 0.5,
-                maxScale: 10.0,
-                panEnabled: isHandMode,
-                scaleEnabled: isHandMode,
-                child: GestureDetector(
-                  onPanStart: isHandMode ? null : (details) {
-                    _saveHistory();
-                    setState(() {
-                      operations.add(PathOp(
-                        points: [_convertOffset(details.localPosition)],
-                        tool: activeTool,
-                        color: selectedColor,
-                        strokeWidth: brushWidth,
-                      ));
-                    });
-                  },
-                  onPanUpdate: isHandMode ? null : (details) {
-                    setState(() {
-                      if (operations.isNotEmpty && operations.last is PathOp) {
-                        (operations.last as PathOp).points.add(_convertOffset(details.localPosition));
-                      }
-                    });
-                  },
-                  onPanEnd: isHandMode ? null : (_) {
-                    setState(() {
-                      if (operations.isNotEmpty && operations.last is PathOp) {
-                        (operations.last as PathOp).points.add(null);
-                      }
-                    });
-                  },
-                  child: CustomPaint(
-                    painter: ColoringPainter(
-                      template: templateImage,
-                      operations: operations,
-                      secondaryColor: secondaryColor,
+            child: Listener(
+              onPointerDown: (_) => setState(() => _pointerCount++),
+              onPointerUp: (_) => setState(() => _pointerCount--),
+              onPointerCancel: (_) => setState(() => _pointerCount--),
+              child: Container(
+                color: Colors.white,
+                child: InteractiveViewer(
+                  transformationController: _transformationController,
+                  minScale: 0.5,
+                  maxScale: 10.0,
+                  panEnabled: _pointerCount > 1,
+                  scaleEnabled: _pointerCount > 1,
+                  child: GestureDetector(
+                    onPanStart: _pointerCount > 1 ? null : (details) {
+                      _saveHistory();
+                      setState(() {
+                        operations.add(PathOp(
+                          points: [_convertOffset(details.localPosition)],
+                          tool: activeTool,
+                          color: selectedColor,
+                          strokeWidth: brushWidth,
+                        ));
+                      });
+                    },
+                    onPanUpdate: _pointerCount > 1 ? null : (details) {
+                      setState(() {
+                        if (operations.isNotEmpty && operations.last is PathOp) {
+                          (operations.last as PathOp).points.add(_convertOffset(details.localPosition));
+                        }
+                      });
+                    },
+                    onPanEnd: _pointerCount > 1 ? null : (_) {
+                      setState(() {
+                        if (operations.isNotEmpty && operations.last is PathOp) {
+                          (operations.last as PathOp).points.add(null);
+                        }
+                      });
+                    },
+                    child: CustomPaint(
+                      painter: ColoringPainter(
+                        template: templateImage,
+                        operations: operations,
+                        secondaryColor: secondaryColor,
+                      ),
+                      size: Size.infinite,
                     ),
-                    size: Size.infinite,
                   ),
                 ),
               ),
@@ -347,7 +397,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
               _toolButton(DrawingTool.kursun, Icons.edit, "Kalem", isMenu: true),
               _toolButton(DrawingTool.firca_classic, Icons.brush, "Firca", isMenu: true),
               _toolButton(DrawingTool.eraser, Icons.delete_outline, "Silgi"),
-              _toolButton(DrawingTool.hand, Icons.zoom_in_map, "El"),
             ],
           ),
           const SizedBox(height: 16),
@@ -529,12 +578,10 @@ class ColoringPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Draw drawing operations first
     for (var op in operations) {
       op.draw(canvas, 1.0, secondaryColor);
     }
 
-    // Draw template on top with multiply blend mode
     if (template != null) {
       final paint = Paint()..blendMode = BlendMode.multiply;
       final Rect destRect = Rect.fromLTWH(0, 0, size.width, size.height);
