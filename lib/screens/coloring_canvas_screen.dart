@@ -286,7 +286,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   }
 
   Widget _buildSubToolMenu() {
-    final subTools = currentMenuType == 'Kalem'
+    final List<Map<String, dynamic>> subTools = currentMenuType == 'Kalem'
         ? [
             {'tool': DrawingTool.kursun, 'label': 'Kursun'},
             {'tool': DrawingTool.keceli, 'label': 'Keceli'},
@@ -302,8 +302,12 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: subTools.map((st) {
         final tool = st['tool'] as DrawingTool;
+        final label = st['label'] as String;
         return GestureDetector(
-          onTap: () => setState(() { activeTool = tool; showSubToolMenu = false; }),
+          onTap: () => setState(() { 
+            activeTool = tool; 
+            showSubToolMenu = false; 
+          }),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 4),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -311,7 +315,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
               color: activeTool == tool ? const Color(0xFFFFD166) : Colors.white,
               border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
             ),
-            child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
           ),
         );
       }).toList(),
@@ -319,7 +323,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   }
 
   Widget _toolButton(DrawingTool tool, IconData icon, String label, {bool isMenu = false}) {
-    bool isSelected = activeTool == tool || (isMenu && currentMenuType == label && showSubToolMenu);
+    bool isSelected = (isMenu && currentMenuType == label) || (!isMenu && activeTool == tool);
+    
     return GestureDetector(
       onTap: () {
         if (isMenu) {
