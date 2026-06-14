@@ -191,6 +191,16 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     const Color(0xFFF6AD55), const Color(0xFFFFD166), const Color(0xFF06D6A0),
     const Color(0xFF118AB2), const Color(0xFF073B4C), const Color(0xFF9B59B6),
     const Color(0xFFED4C67), const Color(0xFFA3CB38), const Color(0xFFC23616),
+    const Color(0xFF000000), const Color(0xFFFFFFFF), const Color(0xFF808080),
+    const Color(0xFFFF0000), const Color(0xFF00FF00), const Color(0xFF0000FF),
+    const Color(0xFFFFFF00), const Color(0xFF00FFFF), const Color(0xFFFF00FF),
+    const Color(0xFFFFA500), const Color(0xFF800080), const Color(0xFF008000),
+    const Color(0xFF800000), const Color(0xFF000080), const Color(0xFF808000),
+    const Color(0xFF008080), const Color(0xFFC0C0C0), const Color(0xFFFFC0CB),
+    const Color(0xFFF0E68C), const Color(0xFFE6E6FA), const Color(0xFFFFF0F5),
+    const Color(0xFFFAF0E6), const Color(0xFF7B68EE), const Color(0xFF48D1CC),
+    const Color(0xFFB0C4DE), const Color(0xFF20B2AA), const Color(0xFF778899),
+    const Color(0xFFBC8F8F), const Color(0xFF4682B4), const Color(0xFFD2B48C),
   ];
 
   @override
@@ -336,8 +346,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                 transformationController: _transformationController,
                 minScale: 1.0,
                 maxScale: 10.0,
-                panEnabled: _pointerCount > 1,
-                scaleEnabled: _pointerCount > 1,
+                panEnabled: true,
+                scaleEnabled: true,
                 child: Center(
                   child: AspectRatio(
                     aspectRatio: templateImage != null 
@@ -347,6 +357,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                       builder: (context, constraints) {
                         final size = constraints.biggest;
                         return GestureDetector(
+                          behavior: HitTestBehavior.opaque,
                           onPanStart: (details) {
                             if (_pointerCount > 1) return;
                             _saveHistory();
@@ -368,7 +379,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                               if (op.points.isNotEmpty) {
                                 final lastPoint = op.points.last;
                                 if (lastPoint != null) {
-                                  if ((pixelPos - lastPoint).distance < 1.0) return;
+                                  if ((pixelPos - lastPoint).distance < 0.5) return;
                                 }
                               }
                               setState(() {
@@ -448,7 +459,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
             child: Slider(
               value: brushWidth,
               min: 2.0,
-              max: 50.0,
+              max: 100.0,
               activeColor: const Color(0xFF2D2D2D),
               inactiveColor: const Color(0xFF2D2D2D).withOpacity(0.1),
               onChanged: (v) => setState(() => brushWidth = v),
@@ -472,16 +483,19 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
             {'tool': DrawingTool.gradyan_fircasi, 'label': 'Gradyan'},
           ];
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: subTools.map((st) {
+    return Container(
+      height: 60,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: subTools.length,
+        itemBuilder: (context, index) {
+          final st = subTools[index];
           final tool = st['tool'] as DrawingTool;
+          bool isSelected = activeTool == tool;
           return GestureDetector(
             onTap: () => setState(() {
                 activeTool = tool;
-                showSubToolMenu = false;
                 if (currentMenuType == 'Kalem') {
                   _lastPencilTool = tool;
                 } else if (currentMenuType == 'Firca') {
@@ -489,17 +503,17 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                 }
               }),
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: activeTool == tool ? const Color(0xFFFFD166) : Colors.white,
-                border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
-                boxShadow: const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
+                color: isSelected ? const Color(0xFFFFD166) : Colors.white,
+                border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
               ),
-              child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+              child: Center(child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14))),
             ),
           );
-        }).toList(),
+        }
       ),
     );
   }
@@ -533,16 +547,16 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       child: Column(
         children: [
           Container(
-            width: 50, height: 50,
+            width: 60, height: 60,
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFFFFD166) : Colors.white,
               border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
               boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
             ),
-            child: Icon(icon, color: const Color(0xFF2D2D2D)),
+            child: Icon(icon, color: const Color(0xFF2D2D2D), size: 30),
           ),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
         ],
       ),
     );
@@ -550,19 +564,19 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   Widget _buildPalette() {
     return SizedBox(
-      height: 44,
+      height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: palette.length,
         itemBuilder: (context, index) => GestureDetector(
           onTap: () => setState(() { secondaryColor = selectedColor; selectedColor = palette[index]; }),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: 40,
+            margin: const EdgeInsets.symmetric(horizontal: 6),
+            width: 44,
             decoration: BoxDecoration(
               color: palette[index],
-              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 4 : 2),
-              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
+              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 5 : 3),
+              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(3, 3))],
             ),
           ),
         ),
