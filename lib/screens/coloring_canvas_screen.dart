@@ -410,7 +410,7 @@ class ColoringPainter extends CustomPainter {
         rect: Rect.fromLTWH(0, 0, size.width, size.height),
         image: template!,
         fit: BoxFit.contain,
-        paint: paint,
+        // paint: paint,
       );
     }
     
