@@ -425,7 +425,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (showSubToolMenu) _buildSubToolMenu(),
+          _buildSubToolMenu(),
           const SizedBox(height: 12),
           _buildStrokeWidthSlider(),
           const SizedBox(height: 12),
@@ -471,6 +471,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Widget _buildSubToolMenu() {
+    if (!showSubToolMenu || currentMenuType == null) return const SizedBox.shrink();
+
     final subTools = currentMenuType == 'Kalem'
         ? [
             {'tool': DrawingTool.kursun, 'label': 'Kursun'},
@@ -573,10 +575,17 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 6),
             width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: palette[index],
-              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 5 : 3),
-              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(3, 3))],
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFF2D2D2D), 
+                width: selectedColor == palette[index] ? 5 : 3
+              ),
+              boxShadow: selectedColor == palette[index] 
+                  ? null 
+                  : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(3, 3))],
             ),
           ),
         ),
