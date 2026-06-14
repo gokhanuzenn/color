@@ -1,8 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'category_screen.dart';
+import 'package:color_world/screens/category_screen.dart';
 
 void main() {
   runApp(const ColorWorldApp());
@@ -95,7 +94,7 @@ class PathOp extends PaintOp {
       case DrawingTool.gradyan_fircasi:
         // WET-PAINT MIXING EFFECT: Blend current color with secondary (previous) color
         // Using BlendMode.plus for additive color mixing feel or Overlay for high-contrast blending.
-        // We use a low opacity linear gradient per segment to create a "trailing" mix effect.
+        // We use a low opacity linear gradient per segment to create a \"trailing\" mix effect.
         paint.blendMode = BlendMode.plus;
         paint.strokeWidth = strokeWidth * 1.5;
         if (points.length > 1) {
@@ -110,7 +109,7 @@ class PathOp extends PaintOp {
                 ],
               );
               canvas.drawLine(points[i]!, points[i+1]!, paint);
-              // Adding a second pass with different blend for "wetness"
+              // Adding a second pass with different blend for \"wetness\"
               canvas.drawLine(points[i]!, points[i+1]!, paint..blendMode = BlendMode.screen..strokeWidth = strokeWidth * 0.8..shader = null..color = color.withValues(alpha: finalOpacity * 0.2));
             }
           }
@@ -375,36 +374,18 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
     }
   }
 
-  Future<void> _addImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
-    if (result != null && result.files.first.bytes != null && canvasSize != null) {
-      final ui.Codec codec = await ui.instantiateImageCodec(result.files.first.bytes!);
-      final ui.FrameInfo frame = await codec.getNextFrame();
-      final ui.Image img = frame.image;
-      double targetW = canvasSize!.width * 0.6;
-      double targetH = canvasSize!.height * 0.6;
-      double initialScale = math.min(targetW / img.width, targetH / img.height);
-      initialScale = initialScale.clamp(0.05, 5.0);
-      Offset centerPos = Offset((canvasSize!.width - img.width * initialScale) / 2, (canvasSize!.height - img.height * initialScale) / 2);
-      setState(() {
-        layers.insert(0, AppLayer(id: DateTime.now().toString(), name: 'Resim Katman', image: img, scale: initialScale, offset: centerPos));
-        activeLayerIndex = 0; 
-      });
-    }
-  }
-
   void _openTextDialog(Offset position) {
     final controller = TextEditingController();
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF2D2D2D),
-        title: const Text("Yazı Ekle", style: TextStyle(color: Colors.white)),
+        title: const Text(\"Yazı Ekle\", style: TextStyle(color: Colors.white)),
         content: TextField(
           controller: controller,
           autofocus: true,
           style: const TextStyle(color: Colors.white),
-          decoration: const InputDecoration(hintText: "Buraya yazın...", hintStyle: TextStyle(color: Colors.white24)),
+          decoration: const InputDecoration(hintText: \"Buraya yazın...\", hintStyle: TextStyle(color: Colors.white24)),
           onSubmitted: (val) {
             if (val.isNotEmpty) {
               _submitText(val, position);
@@ -413,13 +394,13 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
           },
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("İptal")),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text(\"İptal\")),
           TextButton(onPressed: () {
             if (controller.text.isNotEmpty) {
               _submitText(controller.text, position);
             }
             Navigator.pop(context);
-          }, child: const Text("Ekle")),
+          }, child: const Text(\"Ekle\")),
         ],
       ),
     );
@@ -429,7 +410,7 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
     setState(() {
       layers.insert(0, AppLayer(
         id: DateTime.now().toString(),
-        name: "Metin: $text",
+        name: \"Metin: \$text\",
         isTextLayer: true,
         text: text,
         textColor: selectedColor,
@@ -442,7 +423,7 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
     });
   }
 
-  void _addLayer() { setState(() { layers.insert(0, AppLayer(id: DateTime.now().toString(), name: 'Katman ${layers.length}')); activeLayerIndex = 0; activeMaskPath = null; }); }
+  void _addLayer() { setState(() { layers.insert(0, AppLayer(id: DateTime.now().toString(), name: 'Katman \${layers.length}')); activeLayerIndex = 0; activeMaskPath = null; }); }
   void _removeLayer(int index) { 
     if (layers.length > 1) { 
       setState(() { 
@@ -487,14 +468,13 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
         elevation: 0, 
         iconTheme: const IconThemeData(color: Colors.white), 
         actions: [
-          IconButton(icon: const Icon(Icons.undo, color: Colors.white), onPressed: _undo, tooltip: "Geri Al"),
-          IconButton(icon: const Icon(Icons.redo, color: Colors.white), onPressed: _redo, tooltip: "İleri Al"),
+          IconButton(icon: const Icon(Icons.undo, color: Colors.white), onPressed: _undo, tooltip: \"Geri Al\"),
+          IconButton(icon: const Icon(Icons.redo, color: Colors.white), onPressed: _redo, tooltip: \"İleri Al\"),
           const VerticalDivider(color: Colors.white24, indent: 12, endIndent: 12),
-          if (activeMaskPath != null) IconButton(icon: const Icon(Icons.deselect, color: Colors.orangeAccent), onPressed: () => setState(() => activeMaskPath = null), tooltip: "Seçimi Kaldır"),
-          IconButton(icon: Icon(isTransparentBackground ? Icons.grid_4x4 : Icons.square, color: Colors.white), onPressed: () => setState(() => isTransparentBackground = !isTransparentBackground), tooltip: "Şeffaf Arka Plan"),
-          IconButton(icon: const Icon(Icons.add_photo_alternate, color: Colors.white), onPressed: _addImage, tooltip: "Resim Ekle"),
-          IconButton(icon: Icon(keepInsideLines ? Icons.verified_user : Icons.verified_user_outlined, color: keepInsideLines ? Colors.lightBlueAccent : Colors.white), onPressed: () => setState(() => keepInsideLines = !keepInsideLines), tooltip: "Sınırları Koru"),
-          IconButton(icon: Icon(layers[activeLayerIndex].isLocked ? Icons.lock : Icons.lock_open, size: 20, color: Colors.white70), onPressed: () { setState(() { layers[activeLayerIndex].isLocked = !layers[activeLayerIndex].isLocked; }); }, tooltip: "Katmanı Kilitle"),
+          if (activeMaskPath != null) IconButton(icon: const Icon(Icons.deselect, color: Colors.orangeAccent), onPressed: () => setState(() => activeMaskPath = null), tooltip: \"Selectımı Kald1r\"),
+          IconButton(icon: Icon(isTransparentBackground ? Icons.grid_4x4 : Icons.square, color: Colors.white), onPressed: () => setState(() => isTransparentBackground = !isTransparentBackground), tooltip: \"Şeffaf Arka Plan\"),
+          IconButton(icon: Icon(keepInsideLines ? Icons.verified_user : Icons.verified_user_outlined, color: keepInsideLines ? Colors.lightBlueAccent : Colors.white), onPressed: () => setState(() => keepInsideLines = !keepInsideLines), tooltip: \"Sınırları Koru\"),
+          IconButton(icon: Icon(layers[activeLayerIndex].isLocked ? Icons.lock : Icons.lock_open, size: 20, color: Colors.white70), onPressed: () { setState(() { layers[activeLayerIndex].isLocked = !layers[activeLayerIndex].isLocked; }); }, tooltip: \"Katmanı Kilitle\"),
           IconButton(icon: const Icon(Icons.layers, color: Colors.white), onPressed: _showLayerManager),
           IconButton(icon: const Icon(Icons.refresh, color: Colors.white), onPressed: () => setState(() { _initTemplate(); canvasBackgroundColor = const Color(0xFFFDFBF7); }))
         ],
@@ -509,13 +489,13 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
           ), 
           child: Column(children: [
             const SizedBox(height: 20), 
-            _vSliderBadge("Boyut"),
+            _vSliderBadge(\"Boyut\"),
             Expanded(child: RotatedBox(quarterTurns: 3, child: Slider(value: (activeLayer.isTextLayer ? activeLayer.fontSize : brushWidth).clamp(1.0, 500.0), min: 1, max: 500, activeColor: Colors.lightBlueAccent, inactiveColor: Colors.black, onChanged: (v) => setState(() { if (activeLayer.isTextLayer) activeLayer.fontSize = v; else brushWidth = v; })))),
             const SizedBox(height: 10), 
-            _vSliderBadge("Opak"),
+            _vSliderBadge(\"Opak\"),
             Expanded(child: RotatedBox(quarterTurns: 3, child: Slider(value: activeLayer.opacity.clamp(0.0, 1.0), min: 0, max: 1, activeColor: Colors.lightBlueAccent, inactiveColor: Colors.black, onChanged: activeLayer.isLocked ? null : (v) => setState(() => activeLayer.opacity = v)))),
             const SizedBox(height: 10), 
-            _vSliderBadge("Ölçek"),
+            _vSliderBadge(\"lçek\"),
             Expanded(child: RotatedBox(quarterTurns: 3, child: Slider(value: math.log(activeLayer.scale.clamp(0.05, 5.0)), min: math.log(0.05), max: math.log(5.0), activeColor: activeLayer.isLocked ? Colors.grey : Colors.orangeAccent, inactiveColor: Colors.black, onChanged: activeLayer.isLocked ? null : (v) => setState(() => activeLayer.scale = math.exp(v))))),
             const SizedBox(height: 20)
           ])),
@@ -526,7 +506,7 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
             decoration: const BoxDecoration(
               color: Color(0xFF121212),
               image: DecorationImage(
-                image: NetworkImage("https://www.transparenttextures.com/patterns/carbon-fibre.png"),
+                image: NetworkImage(\"https://www.transparenttextures.com/patterns/carbon-fibre.png\"),
                 repeat: ImageRepeat.repeat,
                 opacity: 0.05,
               ),
@@ -644,52 +624,52 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
       decoration: const BoxDecoration(color: Color(0xFF252525), border: Border(top: BorderSide(color: Colors.black, width: 1))), 
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-          _mainTool(DrawingTool.selection, Icons.ads_click, "Seçim"),
-          _mainTool(DrawingTool.bucket, Icons.format_paint, "Doldur"),
-          _toolCategoryButton("Kalemler", Icons.edit, () => setState(() { isPenMenuOpen = !isPenMenuOpen; isBrushMenuOpen = false; isTextMenuOpen = false; })),
-          _toolCategoryButton("Fırçalar", Icons.brush, () => setState(() { isBrushMenuOpen = !isBrushMenuOpen; isPenMenuOpen = false; isTextMenuOpen = false; })),
-          _toolCategoryButton("Metin", Icons.text_fields, () => setState(() { isTextMenuOpen = !isTextMenuOpen; isBrushMenuOpen = false; isPenMenuOpen = false; })),
-          _mainTool(DrawingTool.eraser, Icons.delete_outline, "Silgi"),
+          _mainTool(DrawingTool.selection, Icons.ads_click, \"Selectım\"),
+          _mainTool(DrawingTool.bucket, Icons.format_paint, \"Doldur\"),
+          _toolCategoryButton(\"Kalemler\", Icons.edit, () => setState(() { isPenMenuOpen = !isPenMenuOpen; isBrushMenuOpen = false; isTextMenuOpen = false; })),
+          _toolCategoryButton(\"Fırçalar\", Icons.brush, () => setState(() { isBrushMenuOpen = !isBrushMenuOpen; isPenMenuOpen = false; isTextMenuOpen = false; })),
+          _toolCategoryButton(\"Metin\", Icons.text_fields, () => setState(() { isTextMenuOpen = !isTextMenuOpen; isBrushMenuOpen = false; isPenMenuOpen = false; })),
+          _mainTool(DrawingTool.eraser, Icons.delete_outline, \"Silgi\"),
         ]),
         const SizedBox(height: 16),
-        if (isPenMenuOpen) _buildSelectionOverlay("Kalemler", [
-          _toolOption(DrawingTool.kursun, "Kurşun Kalem"),
-          _toolOption(DrawingTool.tukenmez, "Tükenmez Kalem"),
-          _toolOption(DrawingTool.kaligrafi_kalem, "Kaligrafi Kalemi"),
-          _toolOption(DrawingTool.keceli, "Keçeli Kalem"),
-          _toolOption(DrawingTool.boya_kalemi, "Boya Kalemi"),
-          _toolOption(DrawingTool.dogal_kalem, "Doğal Kalem"),
-          _toolOption(DrawingTool.eyedropper, "Renk Seçici"),
+        if (isPenMenuOpen) _buildSelectlectionOverlay(\"Kalemler\", [
+          _toolOption(DrawingTool.kursun, \"Kurşun Kalem\"),
+          _toolOption(DrawingTool.tukenmez, \"Tükenmez Kalem\"),
+          _toolOption(DrawingTool.kaligrafi_kalem, \"Kaligrafi Kalemi\"),
+          _toolOption(DrawingTool.keceli, \"Keçeli Kalem\"),
+          _toolOption(DrawingTool.boya_kalemi, \"Boya Kalemi\"),
+          _toolOption(DrawingTool.dogal_kalem, \"Doğal Kalem\"),
+          _toolOption(DrawingTool.eyedropper, \"Renk Selectici\"),
         ]),
-        if (isBrushMenuOpen) _buildSelectionOverlay("Fırçalar", [
-          _toolOption(DrawingTool.firca_classic, "Fırça (Classic)"),
-          _toolOption(DrawingTool.gradyan_fircasi, "Gradyan Fırçası"),
-          _toolOption(DrawingTool.kaligrafi_firca, "Kaligrafi Fırçası"),
-          _toolOption(DrawingTool.hava_fircasi, "Hava Fırçası"),
-          _toolOption(DrawingTool.yagli_firca, "Yağlı Boya Fırçası"),
-          _toolOption(DrawingTool.sulu_firca, "Sulu Boya Fırçası"),
+        if (isBrushMenuOpen) _buildSelectlectionOverlay(\"Fırçalar\", [
+          _toolOption(DrawingTool.firca_classic, \"Fırça (Classic)\"),
+          _toolOption(DrawingTool.gradyan_fircasi, \"Gradyan Fırçası\"),
+          _toolOption(DrawingTool.kaligrafi_firca, \"Kaligrafi Fırçası\"),
+          _toolOption(DrawingTool.hava_fircasi, \"Hava Fırçası\"),
+          _toolOption(DrawingTool.yagli_firca, \"Yağlı Boya Fırçası\"),
+          _toolOption(DrawingTool.sulu_firca, \"Sulu Boya Fırçası\"),
         ]),
-        if (isTextMenuOpen) _buildTextSettingsOverlay(),
+        if (isTextMenuOpen) _buildTextSelectttingsOverlay(),
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: SizedBox(height: 52, child: ListView.builder(scrollDirection: Axis.horizontal, itemCount: palette.length, itemBuilder: (c, i) => GestureDetector(onTap: () => setState(() { secondaryColor = selectedColor; selectedColor = palette[i]; if (layers[activeLayerIndex].isTextLayer) layers[activeLayerIndex].textColor = palette[i]; }), child: Container(margin: const EdgeInsets.symmetric(horizontal: 4), width: 44, height: 44, decoration: BoxDecoration(color: palette[i], shape: BoxShape.circle, border: Border.all(color: selectedColor == palette[i] ? Colors.white : Colors.black12, width: selectedColor == palette[i] ? 3 : 1))))))),
-          _retroButton(Icons.colorize, "Renk", () => _openRetroColorDialog(false)),
+          _retroButton(Icons.colorize, \"Renk\", () => _openRetroColorDialog(false)),
         ]),
       ]));
   }
 
-  void _openRetroColorDialog(bool forSecondary) {
-    showDialog(context: context, builder: (context) => RetroColorDialog(initialColor: forSecondary ? secondaryColor : selectedColor)).then((color) { if (color != null) setState(() { if (forSecondary) secondaryColor = color; else { secondaryColor = selectedColor; selectedColor = color; } }); });
+  void _openRetroColorDialog(bool forSelectcondary) {
+    showDialog(context: context, builder: (context) => RetroColorDialog(initialColor: forSelectcondary ? secondaryColor : selectedColor)).then((color) { if (color != null) setState(() { if (forSelectcondary) secondaryColor = color; else { secondaryColor = selectedColor; selectedColor = color; } }); });
   }
 
-  Widget _buildTextSettingsOverlay() {
+  Widget _buildTextSelectttingsOverlay() {
     final layer = layers[activeLayerIndex];
     return Container(margin: const EdgeInsets.symmetric(horizontal: 10), padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: const Color(0xFF121212), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white12)), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
         const Icon(Icons.text_fields, color: Colors.lightBlue, size: 18), const SizedBox(width: 8),
-        const Text("Metin Ayarları", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        const Text(\"Metin Ayarları\", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         const Spacer(),
-        _toolCategoryButton("Metin Ekle", Icons.add, () => _openTextDialog(Offset(canvasSize!.width / 2, canvasSize!.height / 2))),
+        _toolCategoryButton(\"Metin Ekle\", Icons.add, () => _openTextDialog(Offset(canvasSize!.width / 2, canvasSize!.height / 2))),
         IconButton(icon: const Icon(Icons.close, color: Colors.white, size: 18), onPressed: () => setState(() { isTextMenuOpen = false; })),
       ]),
       const Divider(color: Colors.white10),
@@ -710,14 +690,14 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
           _alignBtn(Icons.format_align_center, layer.textAlign == TextAlign.center, () => setState(() => layer.textAlign = TextAlign.center)),
           _alignBtn(Icons.format_align_right, layer.textAlign == TextAlign.right, () => setState(() => layer.textAlign = TextAlign.right)),
         ]),
-      ] else const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text("Düzenlemek için bir metin katmanı seçin.", style: TextStyle(color: Colors.white38, fontSize: 10))),
+      ] else const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text(\"Düzenlemek için bir metin katmanı seçin.\", style: TextStyle(color: Colors.white38, fontSize: 10))),
     ]));
   }
 
   Widget _toggleBtn(IconData icon, bool active, VoidCallback onTap) => IconButton(icon: Icon(icon, color: active ? Colors.lightBlue : Colors.white70, size: 20), onPressed: onTap);
   Widget _alignBtn(IconData icon, bool active, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: active ? Colors.lightBlue.withValues(alpha: 0.2) : Colors.transparent, borderRadius: BorderRadius.circular(4)), child: Icon(icon, color: active ? Colors.lightBlue : Colors.white70, size: 20)));
 
-  Widget _buildSelectionOverlay(String title, List<Widget> options) => Container(margin: const EdgeInsets.symmetric(horizontal: 10), decoration: BoxDecoration(color: const Color(0xFF121212), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white12)), child: Column(children: [Padding(padding: const EdgeInsets.all(12), child: Row(children: [Container(width: 4, height: 20, color: Colors.lightBlue), const SizedBox(width: 8), Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const Spacer(), IconButton(icon: const Icon(Icons.close, color: Colors.white, size: 18), onPressed: () => setState(() { isPenMenuOpen = false; isBrushMenuOpen = false; }))])), ...options, const SizedBox(height: 8)]));
+  Widget _buildSelectlectionOverlay(String title, List<Widget> options) => Container(margin: const EdgeInsets.symmetric(horizontal: 10), decoration: BoxDecoration(color: const Color(0xFF121212), borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.white12)), child: Column(children: [Padding(padding: const EdgeInsets.all(12), child: Row(children: [Container(width: 4, height: 20, color: Colors.lightBlue), const SizedBox(width: 8), Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)), const Spacer(), IconButton(icon: const Icon(Icons.close, color: Colors.white, size: 18), onPressed: () => setState(() { isPenMenuOpen = false; isBrushMenuOpen = false; }))])), ...options, const SizedBox(height: 8)]));
   Widget _toolOption(DrawingTool tool, String name) {
     bool sel = activeTool == tool;
     return InkWell(onTap: () => setState(() { activeTool = tool; lastDrawingTool = tool; isPenMenuOpen = false; isBrushMenuOpen = false; }), child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), decoration: BoxDecoration(color: sel ? Colors.white.withValues(alpha: 0.05) : Colors.transparent), child: Row(children: [Text(name, style: TextStyle(color: sel ? Colors.white : Colors.grey[400], fontSize: 14)), const Spacer(), SizedBox(width: 80, height: 20, child: CustomPaint(painter: StrokePreviewPainter(tool: tool, color: Colors.white)))])));
@@ -726,10 +706,10 @@ class _ColoringCanvasPageState extends State<ColoringCanvasPage> {
   Widget _toolCategoryButton(String label, IconData icon, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: const Color(0xFF333333), border: Border.all(color: Colors.white12), borderRadius: BorderRadius.circular(4)), child: Column(children: [Icon(icon, size: 28, color: Colors.white), Text(label, style: const TextStyle(fontSize: 10, color: Colors.white))])));
 
   void _showLayerManager() {
-    showModalBottomSheet(context: context, backgroundColor: const Color(0xFF252525), isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))), builder: (context) => StatefulBuilder(builder: (context, setModalState) => Container(height: MediaQuery.of(context).size.height * 0.7, padding: const EdgeInsets.all(16), child: Column(children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text("KATMAN YÖNETİCİSİ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)), _retroButton(Icons.add, "Yeni Katman", () { _addLayer(); setModalState(() {}); })]), const Divider(color: Colors.white12), Expanded(child: ListView.builder(itemCount: layers.length, itemBuilder: (context, i) => Container(margin: const EdgeInsets.symmetric(vertical: 4), padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: activeLayerIndex == i ? const Color(0xFF333333) : Colors.transparent, border: Border.all(color: activeLayerIndex == i ? Colors.lightBlueAccent : Colors.white12), borderRadius: BorderRadius.circular(8)), child: Column(children: [Row(children: [ClipRRect(borderRadius: BorderRadius.circular(4), child: Container(width: 40, height: 40, color: Colors.white12, child: CustomPaint(painter: MiniLayerPainter(layer: layers[i], paths: templatePaths ?? [], secondaryColor: secondaryColor)))), const SizedBox(width: 12), Expanded(child: Text(layers[i].name, style: const TextStyle(color: Colors.white))), 
+    showModalBottomSheet(context: context, backgroundColor: const Color(0xFF252525), isScrollControlled: true, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))), builder: (context) => StatefulBuilder(builder: (context, setModalState) => Container(height: MediaQuery.of(context).size.height * 0.7, padding: const EdgeInsets.all(16), child: Column(children: [Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [const Text(\"KATMAN YÖNETİCİSİ\", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)), _retroButton(Icons.add, \"Yeni Katman\", () { _addLayer(); setModalState(() {}); })]), const Divider(color: Colors.white12), Expanded(child: ListView.builder(itemCount: layers.length, itemBuilder: (context, i) => Container(margin: const EdgeInsets.symmetric(vertical: 4), padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: activeLayerIndex == i ? const Color(0xFF333333) : Colors.transparent, border: Border.all(color: activeLayerIndex == i ? Colors.lightBlueAccent : Colors.white12), borderRadius: BorderRadius.circular(8)), child: Column(children: [Row(children: [ClipRRect(borderRadius: BorderRadius.circular(4), child: Container(width: 40, height: 40, color: Colors.white12, child: CustomPaint(painter: MiniLayerPainter(layer: layers[i], paths: templatePaths ?? [], secondaryColor: secondaryColor)))), const SizedBox(width: 12), Expanded(child: Text(layers[i].name, style: const TextStyle(color: Colors.white))), 
     if (i > 0) IconButton(icon: const Icon(Icons.keyboard_arrow_up, color: Colors.orangeAccent, size: 20), onPressed: () { _reorderLayer(i, i - 1); setModalState(() {}); }),
     if (i < layers.length - 1) IconButton(icon: const Icon(Icons.keyboard_arrow_down, color: Colors.orangeAccent, size: 20), onPressed: () { _reorderLayer(i, i + 1); setModalState(() {}); }),
-    IconButton(icon: Icon(layers[i].isVisible ? Icons.visibility : Icons.visibility_off, size: 20, color: Colors.white70), onPressed: () { setState(() { layers[i].isVisible = !layers[i].isVisible; }); setModalState(() {}); }), IconButton(icon: Icon(layers[i].isLocked ? Icons.lock : Icons.lock_open, size: 20, color: Colors.white70), onPressed: () { setState(() { layers[i].isLocked = !layers[i].isLocked; }); setModalState(() {}); }), IconButton(icon: const Icon(Icons.delete, size: 20, color: Colors.redAccent), onPressed: () { _removeLayer(i); setModalState(() {}); })]), Row(children: [const Text("Saydamlık:", style: TextStyle(fontSize: 10, color: Colors.white70)), Expanded(child: Slider(value: layers[i].opacity.clamp(0.0, 1.0), min: 0, max: 1, activeColor: Colors.lightBlueAccent, inactiveColor: Colors.black, onChanged: layers[i].isLocked ? null : (v) { setState(() { layers[i].opacity = v; }); setModalState(() {}); })), _retroButton(null, "Seç", () { setState(() { activeLayerIndex = i; activeMaskPath = null; }); setModalState(() {}); Navigator.pop(context); })])]))))]))));
+    IconButton(icon: Icon(layers[i].isVisible ? Icons.visibility : Icons.visibility_off, size: 20, color: Colors.white70), onPressed: () { setState(() { layers[i].isVisible = !layers[i].isVisible; }); setModalState(() {}); }), IconButton(icon: Icon(layers[i].isLocked ? Icons.lock : Icons.lock_open, size: 20, color: Colors.white70), onPressed: () { setState(() { layers[i].isLocked = !layers[i].isLocked; }); setModalState(() {}); }), IconButton(icon: const Icon(Icons.delete, size: 20, color: Colors.redAccent), onPressed: () { _removeLayer(i); setModalState(() {}); })]), Row(children: [const Text(\"Saydamlık:\", style: TextStyle(fontSize: 10, color: Colors.white70)), Expanded(child: Slider(value: layers[i].opacity.clamp(0.0, 1.0), min: 0, max: 1, activeColor: Colors.lightBlueAccent, inactiveColor: Colors.black, onChanged: layers[i].isLocked ? null : (v) { setState(() { layers[i].opacity = v; }); setModalState(() {}); })), _retroButton(null, \"Select\", () { setState(() { activeLayerIndex = i; activeMaskPath = null; }); setModalState(() {}); Navigator.pop(context); })])]))))]))));
   }
 
   Widget _retroButton(IconData? icon, String label, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF333333), border: Border.all(color: Colors.white12), borderRadius: BorderRadius.circular(4)), child: Row(mainAxisSize: MainAxisSize.min, children: [if (icon != null) Icon(icon, size: 16, color: Colors.white), if (icon != null) const SizedBox(width: 4), Text(label, style: const TextStyle(fontSize: 10, color: Colors.white))])));
@@ -756,13 +736,13 @@ class _RetroColorDialogState extends State<RetroColorDialog> {
   void initState() {
     super.initState();
     currentColor = widget.initialColor;
-    hexController = TextEditingController(text: '#${currentColor.toRgbValue().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}');
+    hexController = TextEditingController(text: '#\${currentColor.toRgbValue().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}');
   }
 
   void _updateColor(Color color) {
     setState(() {
       currentColor = color;
-      hexController.text = '#${color.toRgbValue().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
+      hexController.text = '#\${color.toRgbValue().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
     });
   }
 
@@ -776,7 +756,7 @@ class _RetroColorDialogState extends State<RetroColorDialog> {
         padding: const EdgeInsets.all(4),
         width: 450,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(height: 40, decoration: const BoxDecoration(color: Color(0xFF121212), borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12))), padding: const EdgeInsets.symmetric(horizontal: 16), child: const Row(children: [Text("Renkleri Düzenle", style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)), Spacer(), Icon(Icons.palette, color: Colors.white, size: 18)])),
+          Container(height: 40, decoration: const BoxDecoration(color: Color(0xFF121212), borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12))), padding: const EdgeInsets.symmetric(horizontal: 16), child: const Row(children: [Text(\"Renkleri Düzenle\", style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)), Spacer(), Icon(Icons.palette, color: Colors.white, size: 18)])),
           Padding(padding: const EdgeInsets.all(16), child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Column(children: [
               GestureDetector(
@@ -792,24 +772,24 @@ class _RetroColorDialogState extends State<RetroColorDialog> {
             ]),
             const SizedBox(width: 24),
             Expanded(child: Column(children: [
-              _colorInput("Renk:", hsv.hue.toInt().clamp(0, 360), (v) => _updateColor(hsv.withHue(v.toDouble().clamp(0.0, 360.0)).toColor()), 360),
-              _colorInput("Doygunluk:", (hsv.saturation * 240).toInt().clamp(0, 240), (v) => _updateColor(hsv.withSaturation((v / 240).clamp(0.0, 1.0)).toColor()), 240),
-              _colorInput("Parlaklık:", (hsv.value * 240).toInt().clamp(0, 240), (v) => _updateColor(hsv.withValue((v / 240).clamp(0.0, 1.0)).toColor()), 240),
+              _colorInput(\"Renk:\", hsv.hue.toInt().clamp(0, 360), (v) => _updateColor(hsv.withHue(v.toDouble().clamp(0.0, 360.0)).toColor()), 360),
+              _colorInput(\"Doygunluk:\", (hsv.saturation * 240).toInt().clamp(0, 240), (v) => _updateColor(hsv.withSaturation((v / 240).clamp(0.0, 1.0)).toColor()), 240),
+              _colorInput(\"Parlaklık:\", (hsv.value * 240).toInt().clamp(0, 240), (v) => _updateColor(hsv.withValue((v / 240).clamp(0.0, 1.0)).toColor()), 240),
               const Divider(color: Colors.white12, height: 24),
-              Row(children: [const Text("Hex:", style: TextStyle(fontSize: 10, color: Colors.white70)), const SizedBox(width: 12), Expanded(child: Container(height: 32, decoration: BoxDecoration(color: const Color(0xFF121212), borderRadius: BorderRadius.circular(4)), child: TextField(controller: hexController, style: const TextStyle(fontSize: 11, color: Colors.white), decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 14)), onSubmitted: (s) { try { _updateColor(Color(int.parse(s.replaceFirst('#', '0xFF'), radix: 16))); } catch (e) {} })))])
+              Row(children: [const Text(\"Hex:\", style: TextStyle(fontSize: 10, color: Colors.white70)), const SizedBox(width: 12), Expanded(child: Container(height: 32, decoration: BoxDecoration(color: const Color(0xFF121212), borderRadius: BorderRadius.circular(4)), child: TextField(controller: hexController, style: const TextStyle(fontSize: 11, color: Colors.white), decoration: const InputDecoration(border: InputBorder.none, contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 14)), onSubmitted: (s) { try { _updateColor(Color(int.parse(s.replaceFirst('#', '0xFF'), radix: 16))); } catch (e) {} })))])
             ]))
           ])),
           Padding(padding: const EdgeInsets.all(16), child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            _dialogButton("Tamam", () => Navigator.pop(context, currentColor), isPrimary: true),
+            _dialogButton(\"Tamam\", () => Navigator.pop(context, currentColor), isPrimary: true),
             const SizedBox(width: 12),
-            _dialogButton("İptal", () => Navigator.pop(context)),
+            _dialogButton(\"İptal\", () => Navigator.pop(context)),
           ]))
         ]),
       ),
     );
   }
 
-  Widget _colorInput(String label, int val, Function(int) onChange, int max) => Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: Row(children: [SizedBox(width: 40, child: Text(label, style: const TextStyle(fontSize: 10, color: Colors.white70))), Expanded(child: SizedBox(height: 20, child: Slider(value: val.toDouble(), min: 0, max: max.toDouble(), activeColor: Colors.lightBlueAccent, inactiveColor: Colors.black, onChanged: (v) => onChange(v.toInt())))), Container(width: 32, height: 22, decoration: BoxDecoration(color: const Color(0xFF121212), borderRadius: BorderRadius.circular(4)), child: Center(child: Text("$val", style: const TextStyle(fontSize: 10, color: Colors.white))))]));
+  Widget _colorInput(String label, int val, Function(int) onChange, int max) => Padding(padding: const EdgeInsets.symmetric(vertical: 2), child: Row(children: [SizedBox(width: 40, child: Text(label, style: const TextStyle(fontSize: 10, color: Colors.white70))), Expanded(child: SizedBox(height: 20, child: Slider(value: val.toDouble(), min: 0, max: max.toDouble(), activeColor: Colors.lightBlueAccent, inactiveColor: Colors.black, onChanged: (v) => onChange(v.toInt())))), Container(width: 32, height: 22, decoration: BoxDecoration(color: const Color(0xFF121212), borderRadius: BorderRadius.circular(4)), child: Center(child: Text(\"\$val\", style: const TextStyle(fontSize: 10, color: Colors.white))))]));
 
   Widget _dialogButton(String label, VoidCallback onTap, {bool isPrimary = false}) => GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), decoration: BoxDecoration(color: isPrimary ? Colors.lightBlueAccent.withValues(alpha: 0.1) : const Color(0xFF333333), border: Border.all(color: isPrimary ? Colors.lightBlueAccent : Colors.white12), borderRadius: BorderRadius.circular(4)), child: Center(child: Text(label, style: TextStyle(fontSize: 11, color: isPrimary ? Colors.lightBlueAccent : Colors.white)))));
 }
