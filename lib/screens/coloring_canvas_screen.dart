@@ -427,6 +427,12 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
             setState(() {
               showSubToolMenu = true;
               currentMenuType = label;
+              // Set default sub-tool when switching menus
+              if (label == "Firca") {
+                activeTool = DrawingTool.firca_classic;
+              } else if (label == "Kalem") {
+                activeTool = DrawingTool.kursun;
+              }
             });
           }
         } else {
