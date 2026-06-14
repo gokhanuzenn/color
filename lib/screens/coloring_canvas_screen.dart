@@ -508,6 +508,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected ? const Color(0xFFFFD166) : Colors.white,
+                borderRadius: BorderRadius.circular(30),
                 border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
                 boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
               ),
