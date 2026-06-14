@@ -416,7 +416,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           _buildStrokeWidthSlider(),
           const SizedBox(height: 12),
           Row(
-            mainAxisAlignment: Main => _toolButton(DrawingTool.kursun, Icons.edit, "Kalem", isMenu: true),
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _toolButton(DrawingTool.kursun, Icons.edit, "Kalem", isMenu: true),
               _toolButton(DrawingTool.firca_classic, Icons.brush, "Firca", isMenu: true),
               _toolButton(DrawingTool.eraser, Icons.delete_outline, "Silgi"),
             ],
