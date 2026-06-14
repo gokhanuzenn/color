@@ -177,6 +177,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   bool showSubToolMenu = false;
   String? currentMenuType;
 
+  final TransformationController _transformationController = TransformationController();
   final List<List<PaintOp>> _undoStack = [];
   final List<List<PaintOp>> _redoStack = [];
 
@@ -202,6 +203,12 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   void initState() {
     super.initState();
     _loadTemplate();
+  }
+
+  @override
+  void dispose() {
+    _transformationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadTemplate() async {
@@ -237,6 +244,10 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
     }
   }
 
+  Offset _convertOffset(Offset localOffset) {
+    return _transformationController.toScene(localOffset);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -256,39 +267,48 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
           Expanded(
             child: Container(
               color: Colors.white,
-              child: GestureDetector(
-                onPanStart: (details) {
-                  _saveHistory();
-                  setState(() {
-                    operations.add(PathOp(
-                      points: [details.localPosition],
-                      tool: activeTool,
-                      color: selectedColor,
-                      strokeWidth: brushWidth,
-                    ));
-                  });
-                },
-                onPanUpdate: (details) {
-                  setState(() {
-                    if (operations.isNotEmpty && operations.last is PathOp) {
-                      (operations.last as PathOp).points.add(details.localPosition);
-                    }
-                  });
-                },
-                onPanEnd: (_) {
-                  setState(() {
-                    if (operations.isNotEmpty && operations.last is PathOp) {
-                      (operations.last as PathOp).points.add(null);
-                    }
-                  });
-                },
-                child: CustomPaint(
-                  painter: ColoringPainter(
-                    template: templateImage,
-                    operations: operations,
-                    secondaryColor: secondaryColor,
+              child: InteractiveViewer(
+                transformationController: _transformationController,
+                minScale: 0.5,
+                maxScale: 10.0,
+                panEnabled: true,
+                scaleEnabled: true,
+                // Only allow drawing when user uses 1 pointer or specified conditions
+                // InteractiveViewer handles pinch-to-zoom (2 pointers) by default.
+                child: GestureDetector(
+                  onPanStart: (details) {
+                    _saveHistory();
+                    setState(() {
+                      operations.add(PathOp(
+                        points: [_convertOffset(details.localPosition)],
+                        tool: activeTool,
+                        color: selectedColor,
+                        strokeWidth: brushWidth,
+                      ));
+                    });
+                  },
+                  onPanUpdate: (details) {
+                    setState(() {
+                      if (operations.isNotEmpty && operations.last is PathOp) {
+                        (operations.last as PathOp).points.add(_convertOffset(details.localPosition));
+                      }
+                    });
+                  },
+                  onPanEnd: (_) {
+                    setState(() {
+                      if (operations.isNotEmpty && operations.last is PathOp) {
+                        (operations.last as PathOp).points.add(null);
+                      }
+                    });
+                  },
+                  child: CustomPaint(
+                    painter: ColoringPainter(
+                      template: templateImage,
+                      operations: operations,
+                      secondaryColor: secondaryColor,
+                    ),
+                    size: Size.infinite,
                   ),
-                  size: Size.infinite,
                 ),
               ),
             ),
@@ -407,8 +427,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
             setState(() {
               showSubToolMenu = true;
               currentMenuType = label;
-              // Don't change activeTool immediately if menu is just opening?
-              // Actually for UX usually we select the first one or keep current if valid
             });
           }
         } else {
@@ -479,7 +497,6 @@ class ColoringPainter extends CustomPainter {
       final paint = Paint()..blendMode = BlendMode.multiply;
       final Rect destRect = Rect.fromLTWH(0, 0, size.width, size.height);
       
-      // Use canvas.drawImageRect with Paint that has blendMode = multiply
       canvas.drawImageRect(
         template!,
         Rect.fromLTWH(0, 0, template!.width.toDouble(), template!.height.toDouble()),
