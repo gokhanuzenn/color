@@ -34,6 +34,7 @@ class PathOp extends PaintOp {
   final Color color;
   final double strokeWidth;
   final double opacity;
+  ui.Path? _memoizedPath;
 
   PathOp({
     required this.points,
@@ -42,6 +43,28 @@ class PathOp extends PaintOp {
     required this.strokeWidth,
     this.opacity = 1.0,
   });
+
+  ui.Path get path {
+    if (_memoizedPath != null) return _memoizedPath!;
+    _memoizedPath = ui.Path();
+    if (points.isEmpty) return _memoizedPath!;
+    bool first = true;
+    for (var p in points) {
+      if (p != null) {
+        if (first) {
+          _memoizedPath!.moveTo(p.dx, p.dy);
+          first = false;
+        } else {
+          _memoizedPath!.lineTo(p.dx, p.dy);
+        }
+      } else {
+        first = true;
+      }
+    }
+    return _memoizedPath!;
+  }
+
+  void invalidate() => _memoizedPath = null;
 
   @override
   void draw(Canvas canvas, double parentOpacity, Color secondaryColor) {
@@ -62,33 +85,13 @@ class PathOp extends PaintOp {
       case DrawingTool.kursun:
         paint.strokeWidth = strokeWidth * 0.4;
         paint.color = color.withOpacity(finalOpacity * 0.7);
-        _drawBasic(canvas, paint);
+        canvas.drawPath(path, paint);
         break;
-      case DrawingTool.tukenmez:
-        paint.strokeWidth = strokeWidth * 0.3;
-        paint.color = color.withOpacity(finalOpacity * 0.95);
-        _drawBasic(canvas, paint);
-        break;
-      case DrawingTool.keceli:
-        paint.strokeWidth = strokeWidth * 1.2;
-        paint.strokeCap = StrokeCap.square;
-        paint.color = color.withOpacity(finalOpacity * 0.5);
-        _drawBasic(canvas, paint);
-        break;
-      case DrawingTool.jel_kalem:
-        paint.strokeWidth = strokeWidth * 0.6;
-        _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 1.0));
-        break;
-      case DrawingTool.komur:
-        final rnd = math.Random(13);
-        for (int i = 0; i < points.length - 1; i++) {
-          if (points[i] != null && points[i + 1] != null) {
-            for (int j = 0; j < 8; j++) {
-              Offset off = Offset(rnd.nextDouble() * 8 - 4, rnd.nextDouble() * 8 - 4);
-              canvas.drawCircle(points[i]! + off, rnd.nextDouble() * 2, paint..color = color.withOpacity(finalOpacity * 0.2)..style = PaintingStyle.fill);
-            }
-          }
-        }
+      case DrawingTool.sulu_firca:
+        paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+        paint.color = color.withOpacity(finalOpacity * 0.2);
+        paint.strokeWidth = strokeWidth * 2.0;
+        canvas.drawPath(path, paint);
         break;
       case DrawingTool.boya_kalemi:
         final rnd = math.Random(42);
@@ -98,38 +101,6 @@ class PathOp extends PaintOp {
               Offset off = Offset(rnd.nextDouble() * 5 - 2.5, rnd.nextDouble() * 5 - 2.5);
               canvas.drawLine(points[i]! + off, points[i + 1]! + off, paint..color = color.withOpacity(finalOpacity * 0.5)..strokeWidth = strokeWidth * 0.3);
             }
-          }
-        }
-        break;
-      case DrawingTool.sulu_firca:
-        paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-        paint.color = color.withOpacity(finalOpacity * 0.2);
-        paint.strokeWidth = strokeWidth * 2.0;
-        _drawBasic(canvas, paint);
-        break;
-      case DrawingTool.sprey:
-        final rnd = math.Random();
-        for (int i = 0; i < points.length; i++) {
-          if (points[i] != null) {
-            for (int j = 0; j < 15; j++) {
-              double r = rnd.nextDouble() * strokeWidth * 2.0;
-              double angle = rnd.nextDouble() * 2 * math.pi;
-              Offset off = Offset(r * math.cos(angle), r * math.sin(angle));
-              canvas.drawCircle(points[i]! + off, rnd.nextDouble() * 1.5, paint..color = color.withOpacity(finalOpacity * 0.15)..style = PaintingStyle.fill);
-            }
-          }
-        }
-        break;
-      case DrawingTool.yagli_boya:
-        paint.strokeWidth = strokeWidth * 1.5;
-        _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 0.8));
-        break;
-      case DrawingTool.kuru_firca:
-        paint.strokeWidth = strokeWidth * 0.4;
-        final rnd = math.Random(7);
-        for (int i = 0; i < points.length - 1; i++) {
-          if (points[i] != null && points[i + 1] != null && rnd.nextDouble() > 0.3) {
-            canvas.drawLine(points[i]!, points[i+1]!, paint..color = color.withOpacity(finalOpacity * 0.4));
           }
         }
         break;
@@ -148,15 +119,7 @@ class PathOp extends PaintOp {
         }
         break;
       default:
-        _drawBasic(canvas, paint);
-    }
-  }
-
-  void _drawBasic(Canvas canvas, Paint paint) {
-    for (int i = 0; i < points.length - 1; i++) {
-      if (points[i] != null && points[i + 1] != null) {
-        canvas.drawLine(points[i]!, points[i + 1]!, paint);
-      }
+        canvas.drawPath(path, paint);
     }
   }
 
@@ -185,11 +148,7 @@ class ColoringCanvasScreen extends StatefulWidget {
   final String assetPath;
   final String templateId;
 
-  const ColoringCanvasScreen({
-    super.key,
-    required this.assetPath,
-    required this.templateId,
-  });
+  const ColoringCanvasScreen({super.key, required this.assetPath, required this.templateId});
 
   @override
   State<ColoringCanvasScreen> createState() => _ColoringCanvasScreenState();
@@ -212,6 +171,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   final List<List<PaintOp>> _undoStack = [];
   final List<List<PaintOp>> _redoStack = [];
+
+  ui.Image? _cachedDrawing;
+  int _lastCachedCount = 0;
 
   final List<Color> palette = [
     const Color(0xFF2D2D2D), const Color(0xFFE94E77), const Color(0xFFFF6B6B),
@@ -252,9 +214,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      _saveProgress();
-    }
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) _saveProgress();
   }
 
   Future<File> _getSaveFile() async {
@@ -267,9 +227,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       final file = await _getSaveFile();
       final List<Map<String, dynamic>> jsonData = operations.map((op) => op.toJson()).toList();
       await file.writeAsString(jsonEncode(jsonData));
-    } catch (e) {
-      debugPrint('Error saving progress: $e');
-    }
+    } catch (e) { debugPrint('Error saving progress: $e'); }
   }
 
   Future<void> _loadProgress() async {
@@ -281,19 +239,42 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         setState(() {
           operations = decoded.map((item) => PathOp.fromJson(item)).toList();
         });
+        _updateCache();
       }
-    } catch (e) {
-      debugPrint('Error loading progress: $e');
-    }
+    } catch (e) { debugPrint('Error loading progress: $e'); }
   }
 
   Future<void> _loadTemplate() async {
     final ByteData data = await rootBundle.load(widget.assetPath);
     final ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
     final ui.FrameInfo fi = await codec.getNextFrame();
+    setState(() { templateImage = fi.image; });
+  }
+
+  Future<void> _updateCache() async {
+    if (templateImage == null) return;
+    final width = templateImage!.width.toDouble();
+    final height = templateImage!.height.toDouble();
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    if (_cachedDrawing != null) canvas.drawImage(_cachedDrawing!, Offset.zero, Paint());
+    for (int i = _lastCachedCount; i < operations.length - 1; i++) {
+      operations[i].draw(canvas, 1.0, secondaryColor);
+    }
+    final picture = recorder.endRecording();
+    final img = await picture.toImage(width.toInt(), height.toInt());
     setState(() {
-      templateImage = fi.image;
+      _cachedDrawing = img;
+      _lastCachedCount = operations.length > 0 ? operations.length - 1 : 0;
     });
+  }
+
+  void _invalidateCache() {
+    setState(() {
+      _cachedDrawing = null;
+      _lastCachedCount = 0;
+    });
+    _updateCache();
   }
 
   void _saveHistory() {
@@ -308,6 +289,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         _redoStack.add(List<PaintOp>.from(operations));
         operations = _undoStack.removeLast();
       });
+      _invalidateCache();
     }
   }
 
@@ -317,23 +299,15 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         _undoStack.add(List<PaintOp>.from(operations));
         operations = _redoStack.removeLast();
       });
+      _invalidateCache();
     }
   }
 
   Offset _screenToPixel(Offset screenPos, Size size) {
     if (templateImage == null) return screenPos;
-    final width = templateImage!.width;
-    final height = templateImage!.height;
-
-    // Inside AspectRatio, size is already the target box size.
-    // The image is scaled to fill this box (since AspectRatio matches image ratio).
-    double scaleX = size.width / width;
-    double scaleY = size.height / height;
-
-    return Offset(
-      screenPos.dx / scaleX,
-      screenPos.dy / scaleY,
-    );
+    double scaleX = size.width / templateImage!.width;
+    double scaleY = size.height / templateImage!.height;
+    return Offset(screenPos.dx / scaleX, screenPos.dy / scaleY);
   }
 
   @override
@@ -365,54 +339,44 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                 scaleEnabled: _pointerCount > 1,
                 child: Center(
                   child: AspectRatio(
-                    aspectRatio: templateImage != null 
-                        ? templateImage!.width / templateImage!.height 
-                        : 1.0,
+                    aspectRatio: templateImage != null ? templateImage!.width / templateImage!.height : 1.0,
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final size = constraints.biggest;
                         return GestureDetector(
-                          onPanStart: (details) {
-                            if (_pointerCount > 1) return;
+                          onPanStart: _pointerCount > 1 ? null : (details) {
                             _saveHistory();
                             final pixelPos = _screenToPixel(details.localPosition, size);
                             setState(() {
-                              operations.add(PathOp(
-                                points: [pixelPos],
-                                tool: activeTool,
-                                color: selectedColor,
-                                strokeWidth: brushWidth,
-                              ));
+                              operations.add(PathOp(points: [pixelPos], tool: activeTool, color: selectedColor, strokeWidth: brushWidth));
                             });
                           },
-                          onPanUpdate: (details) {
-                            if (_pointerCount > 1) return;
+                          onPanUpdate: _pointerCount > 1 ? null : (details) {
                             if (operations.isNotEmpty && operations.last is PathOp) {
                               final pixelPos = _screenToPixel(details.localPosition, size);
                               final op = operations.last as PathOp;
-                              if (op.points.isNotEmpty) {
-                                final lastPoint = op.points.last;
-                                if (lastPoint != null) {
-                                  if ((pixelPos - lastPoint).distance < 1.0) return;
-                                }
-                              }
+                              if (op.points.isNotEmpty && op.points.last != null && (pixelPos - op.points.last!).distance < 1.0) return;
                               setState(() {
                                 op.points.add(pixelPos);
+                                op.invalidate();
                               });
                             }
                           },
-                          onPanEnd: (_) {
-                            if (operations.isNotEmpty && operations.last is PathOp) {
-                              (operations.last as PathOp).points.add(null);
-                            }
+                          onPanEnd: _pointerCount > 1 ? null : (_) {
+                            if (operations.isNotEmpty && operations.last is PathOp) (operations.last as PathOp).points.add(null);
+                            _updateCache();
                           },
-                          child: CustomPaint(
-                            painter: ColoringPainter(
-                              template: templateImage,
-                              operations: operations,
-                              secondaryColor: secondaryColor,
+                          child: RepaintBoundary(
+                            child: CustomPaint(
+                              painter: ColoringPainter(
+                                template: templateImage,
+                                operations: operations,
+                                secondaryColor: secondaryColor,
+                                cachedDrawing: _cachedDrawing,
+                                cachedCount: _lastCachedCount,
+                              ),
+                              size: Size.infinite,
                             ),
-                            size: Size.infinite,
                           ),
                         );
                       }
@@ -470,9 +434,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           const Text("BOYUT", style: TextStyle(fontWeight: FontWeight.w900)),
           Expanded(
             child: Slider(
-              value: brushWidth,
-              min: 2.0,
-              max: 100.0,
+              value: brushWidth, min: 2.0, max: 100.0,
               activeColor: const Color(0xFF2D2D2D),
               inactiveColor: const Color(0xFF2D2D2D).withOpacity(0.1),
               onChanged: (v) => setState(() => brushWidth = v),
@@ -485,7 +447,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   Widget _buildSubToolMenu() {
     if (!showSubToolMenu || currentMenuType == null) return const SizedBox.shrink();
-
     final subTools = currentMenuType == 'Kalem'
         ? [
             {'tool': DrawingTool.kursun, 'label': 'Kursun'},
@@ -503,10 +464,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
             {'tool': DrawingTool.kuru_firca, 'label': 'Kuru'},
             {'tool': DrawingTool.gradyan_fircasi, 'label': 'Gradyan'},
           ];
-
     return Container(
-      height: 60,
-      margin: const EdgeInsets.only(bottom: 8),
+      height: 60, margin: const EdgeInsets.only(bottom: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: subTools.length,
@@ -516,13 +475,10 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           bool isSelected = activeTool == tool;
           return GestureDetector(
             onTap: () => setState(() {
-                activeTool = tool;
-                if (currentMenuType == 'Kalem') {
-                  _lastPencilTool = tool;
-                } else if (currentMenuType == 'Firca') {
-                  _lastBrushTool = tool;
-                }
-              }),
+              activeTool = tool;
+              if (currentMenuType == 'Kalem') _lastPencilTool = tool;
+              else if (currentMenuType == 'Firca') _lastBrushTool = tool;
+            }),
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -541,30 +497,13 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Widget _toolButton(DrawingTool tool, IconData icon, String label, {bool isMenu = false}) {
-    bool isSelected = (isMenu && currentMenuType == label) || (!isMenu && activeTool == tool);
+    bool isSelected = (isMenu && currentMenuType == label && showSubToolMenu) || (!isMenu && activeTool == tool);
     return GestureDetector(
       onTap: () {
         if (isMenu) {
-          if (currentMenuType == label) {
-            setState(() => showSubToolMenu = !showSubToolMenu);
-          } else {
-            setState(() {
-              showSubToolMenu = true;
-              currentMenuType = label;
-              if (label == "Firca") {
-                activeTool = _lastBrushTool;
-              } else if (label == "Kalem") {
-                activeTool = _lastPencilTool;
-              }
-            });
-          }
-        } else {
-          setState(() {
-            activeTool = tool;
-            showSubToolMenu = false;
-            currentMenuType = null;
-          });
-        }
+          if (currentMenuType == label) setState(() => showSubToolMenu = !showSubToolMenu);
+          else setState(() { showSubToolMenu = true; currentMenuType = label; activeTool = (label == "Firca") ? _lastBrushTool : _lastPencilTool; });
+        } else { setState(() { activeTool = tool; showSubToolMenu = false; currentMenuType = null; }); }
       },
       child: Column(
         children: [
@@ -594,18 +533,11 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           onTap: () => setState(() { secondaryColor = selectedColor; selectedColor = palette[index]; }),
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 6),
-            width: 44,
-            height: 44,
+            width: 44, height: 44,
             decoration: BoxDecoration(
-              color: palette[index],
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: const Color(0xFF2D2D2D), 
-                width: selectedColor == palette[index] ? 5 : 3
-              ),
-              boxShadow: selectedColor == palette[index] 
-                  ? null 
-                  : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(3, 3))],
+              color: palette[index], shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 5 : 3),
+              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(3, 3))],
             ),
           ),
         ),
@@ -618,13 +550,14 @@ class ColoringPainter extends CustomPainter {
   final ui.Image? template;
   final List<PaintOp> operations;
   final Color secondaryColor;
+  final ui.Image? cachedDrawing;
+  final int cachedCount;
 
-  ColoringPainter({this.template, required this.operations, required this.secondaryColor});
+  ColoringPainter({this.template, required this.operations, required this.secondaryColor, this.cachedDrawing, this.cachedCount = 0});
 
   @override
   void paint(Canvas canvas, Size size) {
     if (template == null) return;
-
     final width = template!.width.toDouble();
     final height = template!.height.toDouble();
     double scale = math.min(size.width / width, size.height / height);
@@ -636,18 +569,18 @@ class ColoringPainter extends CustomPainter {
     canvas.scale(scale);
 
     canvas.saveLayer(Rect.fromLTWH(0, 0, width, height), Paint());
-    
-    for (var op in operations) {
-      op.draw(canvas, 1.0, secondaryColor);
+    if (cachedDrawing != null) canvas.drawImage(cachedDrawing!, Offset.zero, Paint());
+    for (int i = cachedCount; i < operations.length; i++) {
+      operations[i].draw(canvas, 1.0, secondaryColor);
     }
-
-    final paint = Paint()..blendMode = BlendMode.multiply;
-    canvas.drawImage(template!, Offset.zero, paint);
-    
+    canvas.drawImage(template!, Offset.zero, Paint()..blendMode = BlendMode.multiply);
     canvas.restore();
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant ColoringPainter oldDelegate) => true;
+  bool shouldRepaint(covariant ColoringPainter oldDelegate) {
+    return oldDelegate.operations.length != operations.length || oldDelegate.cachedCount != cachedCount ||
+           (operations.isNotEmpty && operations.last is PathOp && (operations.last as PathOp).points.length != (oldDelegate.operations.last as PathOp).points.length);
+  }
 }
