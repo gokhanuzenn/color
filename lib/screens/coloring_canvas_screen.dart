@@ -13,6 +13,10 @@ enum DrawingTool {
   boya_kalemi,
   eraser,
   gradyan_fircasi,
+  jel_kalem,
+  komur,
+  sprey,
+  kuru_firca,
 }
 
 abstract class PaintOp {
@@ -81,6 +85,54 @@ class PathOp extends PaintOp {
           }
         }
         break;
+      case DrawingTool.jel_kalem:
+        paint.strokeWidth = strokeWidth * 0.8;
+        _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 0.9));
+        // Add a slight highlight effect for gel
+        final highlightPaint = Paint()
+          ..color = Colors.white.withOpacity(finalOpacity * 0.3)
+          ..strokeWidth = strokeWidth * 0.2
+          ..strokeCap = StrokeCap.round
+          ..style = PaintingStyle.stroke;
+        _drawBasic(canvas, highlightPaint);
+        break;
+      case DrawingTool.komur:
+        final rnd = math.Random(13);
+        paint.strokeWidth = strokeWidth;
+        for (int i = 0; i < points.length - 1; i++) {
+          if (points[i] != null && points[i + 1] != null) {
+            for (int j = 0; j < 10; j++) {
+              Offset off = Offset(rnd.nextDouble() * 6 - 3, rnd.nextDouble() * 6 - 3);
+              canvas.drawCircle(points[i]! + off, rnd.nextDouble() * 2, paint..color = color.withOpacity(finalOpacity * 0.3));
+            }
+          }
+        }
+        break;
+      case DrawingTool.sprey:
+        final rnd = math.Random();
+        for (int i = 0; i < points.length; i++) {
+          if (points[i] != null) {
+            for (int j = 0; j < 15; j++) {
+              double r = rnd.nextDouble() * strokeWidth * 2;
+              double angle = rnd.nextDouble() * 2 * math.pi;
+              Offset off = Offset(r * math.cos(angle), r * math.sin(angle));
+              canvas.drawCircle(points[i]! + off, rnd.nextDouble() * 1.5, paint..color = color.withOpacity(finalOpacity * 0.2));
+            }
+          }
+        }
+        break;
+      case DrawingTool.kuru_firca:
+        paint.strokeWidth = strokeWidth;
+        final rnd = math.Random(7);
+        for (int i = 0; i < points.length - 1; i++) {
+          if (points[i] != null && points[i + 1] != null) {
+            for (int j = 0; j < 3; j++) {
+               Offset off = Offset(rnd.nextDouble() * 2 - 1, rnd.nextDouble() * 2 - 1);
+               canvas.drawLine(points[i]! + off, points[i+1]! + off, paint..color = color.withOpacity(finalOpacity * 0.4));
+            }
+          }
+        }
+        break;
       default:
         _drawBasic(canvas, paint);
     }
@@ -122,11 +174,22 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   final List<List<PaintOp>> _undoStack = [];
   final List<List<PaintOp>> _redoStack = [];
 
+  // Full list of 42 retro-premium colors
   final List<Color> palette = [
     const Color(0xFF2D2D2D), const Color(0xFFE94E77), const Color(0xFFFF6B6B),
     const Color(0xFFF6AD55), const Color(0xFFFFD166), const Color(0xFF06D6A0),
     const Color(0xFF118AB2), const Color(0xFF073B4C), const Color(0xFF9B59B6),
     const Color(0xFFED4C67), const Color(0xFFA3CB38), const Color(0xFFC23616),
+    const Color(0xFFF8EFBA), const Color(0xFF58B19F), const Color(0xFF2C3A47),
+    const Color(0xFFB33771), const Color(0xFF3B3B98), const Color(0xFFFD7272),
+    const Color(0xFF9AECDB), const Color(0xFFD6A2E8), const Color(0xFF6D214F),
+    const Color(0xFF182C61), const Color(0xFFFC427B), const Color(0xFFBDC581),
+    const Color(0xFF82589F), const Color(0xFFEAB543), const Color(0xFF55E6C1),
+    const Color(0xFFCAD3C8), const Color(0xFFF97F51), const Color(0xFF1B9CFC),
+    const Color(0xFF535C68), const Color(0xFFFEA47F), const Color(0xFF25CCF7),
+    const Color(0xFFE84393), const Color(0xFFE17055), const Color(0xFFD63031),
+    const Color(0xFF00B894), const Color(0xFF00CEC9), const Color(0xFF0984E3),
+    const Color(0xFF6C5CE7), const Color(0xFFB2BEC3), const Color(0xFF2D3436),
   ];
 
   @override
@@ -286,45 +349,47 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   }
 
   Widget _buildSubToolMenu() {
-    final List<Map<String, dynamic>> subTools = currentMenuType == 'Kalem'
+    final subTools = currentMenuType == 'Kalem'
         ? [
             {'tool': DrawingTool.kursun, 'label': 'Kursun'},
             {'tool': DrawingTool.keceli, 'label': 'Keceli'},
+            {'tool': DrawingTool.jel_kalem, 'label': 'Jel Kalem'},
+            {'tool': DrawingTool.komur, 'label': 'Komur'},
             {'tool': DrawingTool.boya_kalemi, 'label': 'Boya'},
           ]
         : [
             {'tool': DrawingTool.firca_classic, 'label': 'Klasik'},
             {'tool': DrawingTool.sulu_firca, 'label': 'Sulu'},
+            {'tool': DrawingTool.sprey, 'label': 'Sprey'},
+            {'tool': DrawingTool.kuru_firca, 'label': 'Kuru'},
             {'tool': DrawingTool.gradyan_fircasi, 'label': 'Gradyan'},
           ];
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: subTools.map((st) {
-        final tool = st['tool'] as DrawingTool;
-        final label = st['label'] as String;
-        return GestureDetector(
-          onTap: () => setState(() { 
-            activeTool = tool; 
-            showSubToolMenu = false; 
-          }),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: activeTool == tool ? const Color(0xFFFFD166) : Colors.white,
-              border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: subTools.map((st) {
+          final tool = st['tool'] as DrawingTool;
+          return GestureDetector(
+            onTap: () => setState(() { activeTool = tool; showSubToolMenu = false; }),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: activeTool == tool ? const Color(0xFFFFD166) : Colors.white,
+                border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
+              ),
+              child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
             ),
-            child: Text(label, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
-          ),
-        );
-      }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 
   Widget _toolButton(DrawingTool tool, IconData icon, String label, {bool isMenu = false}) {
-    bool isSelected = (isMenu && currentMenuType == label) || (!isMenu && activeTool == tool);
-    
+    bool isSelected = activeTool == tool || (isMenu && currentMenuType == label && showSubToolMenu);
     return GestureDetector(
       onTap: () {
         if (isMenu) {
@@ -410,7 +475,7 @@ class ColoringPainter extends CustomPainter {
         rect: Rect.fromLTWH(0, 0, size.width, size.height),
         image: template!,
         fit: BoxFit.contain,
-        // paint: paint,
+         // paint: paint,
       );
     }
     
