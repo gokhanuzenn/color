@@ -8,7 +8,6 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 enum DrawingTool {
-  bucket,
   kursun,
   tukenmez,
   keceli,
@@ -47,10 +46,17 @@ class PathOp extends PaintOp {
     _memoizedPath = ui.Path();
     if (points.isEmpty) return _memoizedPath!;
 
-    for (int i = 0; i < points.length - 1; i++) {
-      if (points[i] != null && points[i + 1] != null) {
-        _memoizedPath!.moveTo(points[i]!.dx, points[i]!.dy);
-        _memoizedPath!.lineTo(points[i + 1]!.dx, points[i + 1]!.dy);
+    bool first = true;
+    for (int i = 0; i < points.length; i++) {
+      if (points[i] != null) {
+        if (first) {
+          _memoizedPath!.moveTo(points[i]!.dx, points[i]!.dy);
+          first = false;
+        } else {
+          _memoizedPath!.lineTo(points[i]!.dx, points[i]!.dy);
+        }
+      } else {
+        first = true;
       }
     }
     return _memoizedPath!;
@@ -148,32 +154,6 @@ class PathOp extends PaintOp {
   }
 }
 
-class FillOp extends PaintOp {
-  final Offset point;
-  final Color color;
-  final ui.Path path;
-
-  FillOp({required this.point, required this.color, required this.path});
-
-  @override
-  void draw(Canvas canvas, double parentOpacity, Color secondaryColor, double scale, double offsetX, double offsetY) {
-    final paint = Paint()
-      ..color = color.withOpacity(parentOpacity)
-      ..style = PaintingStyle.fill;
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  Map<String, dynamic> toJson() {
-    return {
-      'type': 'fill',
-      'x': point.dx,
-      'y': point.dy,
-      'color': color.value,
-    };
-  }
-}
-
 class ColoringCanvasScreen extends StatefulWidget {
   final String assetPath;
   final String templateId;
@@ -190,7 +170,6 @@ class ColoringCanvasScreen extends StatefulWidget {
 
 class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with WidgetsBindingObserver {
   ui.Image? templateImage;
-  Uint32List? pixels;
   List<PaintOp> operations = [];
   Color selectedColor = const Color(0xFFE94E77);
   Color secondaryColor = const Color(0xFFF6AD55);
@@ -202,6 +181,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   String? currentMenuType;
 
   final TransformationController _transformationController = TransformationController();
+  int _pointerCount = 0;
 
   final List<List<PaintOp>> _undoStack = [];
   final List<List<PaintOp>> _redoStack = [];
@@ -267,15 +247,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           final map = item as Map<String, dynamic>;
           if (map['type'] == 'path') {
             loadedOps.add(PathOp.fromJson(map));
-          } else if (map['type'] == 'fill') {
-            final offset = Offset((map['x'] as num).toDouble(), (map['y'] as num).toDouble());
-            final color = Color(map['color'] as int);
-            if (templateImage != null && pixels != null) {
-              final path = await _calculateFloodFillPath(offset);
-              if (path != null) {
-                loadedOps.add(FillOp(point: offset, color: color, path: path));
-              }
-            }
           }
         }
 
@@ -292,13 +263,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     final ByteData data = await rootBundle.load(widget.assetPath);
     final ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
     final ui.FrameInfo fi = await codec.getNextFrame();
-    final bytes = await fi.image.toByteData(format: ui.ImageByteFormat.rawRgba);
-    if (bytes != null) {
-      setState(() {
-        templateImage = fi.image;
-        pixels = bytes.buffer.asUint32List();
-      });
-    }
+    setState(() {
+      templateImage = fi.image;
+    });
   }
 
   void _saveHistory() {
@@ -322,75 +289,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         _undoStack.add(List<PaintOp>.from(operations));
         operations = _redoStack.removeLast();
       });
-    }
-  }
-
-  Future<ui.Path?> _calculateFloodFillPath(Offset localPos) async {
-    if (templateImage == null || pixels == null) return null;
-
-    final width = templateImage!.width;
-    final height = templateImage!.height;
-    
-    int startX = localPos.dx.round();
-    int startY = localPos.dy.round();
-
-    if (startX < 0 || startX >= width || startY < 0 || startY >= height) return null;
-
-    int targetPixel = pixels![startY * width + startX];
-    int tr = targetPixel & 0xFF;
-    int tg = (targetPixel >> 8) & 0xFF;
-    int tb = (targetPixel >> 16) & 0xFF;
-    if (tr < 120 && tg < 120 && tb < 120) return null;
-
-    final path = ui.Path();
-    final visited = Uint8List(width * height);
-    final List<int> queueX = [startX];
-    final List<int> queueY = [startY];
-    visited[startY * width + startX] = 1;
-
-    int head = 0;
-    while (head < queueX.length) {
-      final x = queueX[head];
-      final y = queueY[head];
-      head++;
-
-      path.addRect(Rect.fromLTWH(x.toDouble(), y.toDouble(), 1, 1));
-
-      final dxs = [1, -1, 0, 0];
-      final dys = [0, 0, 1, -1];
-
-      for (int i = 0; i < 4; i++) {
-        final nx = x + dxs[i];
-        final ny = y + dys[i];
-
-        if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-          int idx = ny * width + nx;
-          if (visited[idx] == 0) {
-            int px = pixels![idx];
-            int nr = px & 0xFF;
-            int ng = (px >> 8) & 0xFF;
-            int nb = (px >> 16) & 0xFF;
-            if (nr >= 120 || ng >= 120 || nb >= 120) {
-              visited[idx] = 1;
-              queueX.add(nx);
-              queueY.add(ny);
-            }
-          }
-        }
-      }
-    }
-    return path;
-  }
-
-  void _handleTap(Offset pixelPos) async {
-    if (activeTool == DrawingTool.bucket) {
-      final path = await _calculateFloodFillPath(pixelPos);
-      if (path != null) {
-        _saveHistory();
-        setState(() {
-          operations.add(FillOp(point: pixelPos, color: selectedColor, path: path));
-        });
-      }
     }
   }
 
@@ -430,71 +328,72 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       body: Column(
         children: [
           Expanded(
-            child: Container(
-              color: Colors.white,
+            child: Listener(
+              onPointerDown: (event) => setState(() => _pointerCount++),
+              onPointerUp: (event) => setState(() => _pointerCount--),
+              onPointerCancel: (event) => setState(() => _pointerCount--),
               child: InteractiveViewer(
                 transformationController: _transformationController,
                 minScale: 1.0,
-                maxScale: 5.0,
-                panEnabled: true,
-                scaleEnabled: true,
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final size = constraints.biggest;
-                    return GestureDetector(
-                      onTapDown: (details) {
-                        if (activeTool == DrawingTool.bucket) {
-                          _handleTap(_screenToPixel(details.localPosition, size));
-                        }
-                      },
-                      onPanStart: (details) async {
-                        if (activeTool == DrawingTool.bucket) return;
-                        _saveHistory();
-                        
-                        final pixelPos = _screenToPixel(details.localPosition, size);
-
-                        setState(() {
-                          operations.add(PathOp(
-                            points: [pixelPos],
-                            tool: activeTool,
-                            color: selectedColor,
-                            strokeWidth: brushWidth,
-                          ));
-                        });
-                      },
-                      onPanUpdate: (details) {
-                        if (activeTool == DrawingTool.bucket) return;
-                        if (operations.isNotEmpty && operations.last is PathOp) {
-                          final pixelPos = _screenToPixel(details.localPosition, size);
-                          final op = operations.last as PathOp;
-                          if (op.points.isNotEmpty) {
-                            final lastPoint = op.points.last;
-                            if (lastPoint != null) {
-                              if ((pixelPos - lastPoint).distance < 1.0) return;
+                maxScale: 10.0,
+                panEnabled: _pointerCount > 1,
+                scaleEnabled: _pointerCount > 1,
+                child: Center(
+                  child: AspectRatio(
+                    aspectRatio: templateImage != null 
+                        ? templateImage!.width / templateImage!.height 
+                        : 1.0,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final size = constraints.biggest;
+                        return GestureDetector(
+                          onPanStart: (details) {
+                            if (_pointerCount > 1) return;
+                            _saveHistory();
+                            final pixelPos = _screenToPixel(details.localPosition, size);
+                            setState(() {
+                              operations.add(PathOp(
+                                points: [pixelPos],
+                                tool: activeTool,
+                                color: selectedColor,
+                                strokeWidth: brushWidth,
+                              ));
+                            });
+                          },
+                          onPanUpdate: (details) {
+                            if (_pointerCount > 1) return;
+                            if (operations.isNotEmpty && operations.last is PathOp) {
+                              final pixelPos = _screenToPixel(details.localPosition, size);
+                              final op = operations.last as PathOp;
+                              if (op.points.isNotEmpty) {
+                                final lastPoint = op.points.last;
+                                if (lastPoint != null) {
+                                  if ((pixelPos - lastPoint).distance < 1.0) return;
+                                }
+                              }
+                              setState(() {
+                                op.points.add(pixelPos);
+                                op.invalidatePath();
+                              });
                             }
-                          }
-                          op.points.add(pixelPos);
-                          op.invalidatePath();
-                          (context as Element).markNeedsBuild();
-                        }
-                      },
-                      onPanEnd: (_) {
-                        if (activeTool == DrawingTool.bucket) return;
-                        if (operations.isNotEmpty && operations.last is PathOp) {
-                          (operations.last as PathOp).points.add(null);
-                        }
-                      },
-                      child: CustomPaint(
-                        painter: ColoringPainter(
-                          template: templateImage,
-                          operations: operations,
-                          secondaryColor: secondaryColor,
-                          repaint: ValueNotifier(operations.length),
-                        ),
-                        size: Size.infinite,
-                      ),
-                    );
-                  }
+                          },
+                          onPanEnd: (_) {
+                            if (operations.isNotEmpty && operations.last is PathOp) {
+                              (operations.last as PathOp).points.add(null);
+                            }
+                          },
+                          child: CustomPaint(
+                            painter: ColoringPainter(
+                              template: templateImage,
+                              operations: operations,
+                              secondaryColor: secondaryColor,
+                            ),
+                            size: Size.infinite,
+                          ),
+                        );
+                      }
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -522,7 +421,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _toolButton(DrawingTool.bucket, Icons.format_color_fill, "Kova"),
               _toolButton(DrawingTool.kursun, Icons.edit, "Kalem", isMenu: true),
               _toolButton(DrawingTool.firca_classic, Icons.brush, "Firca", isMenu: true),
               _toolButton(DrawingTool.eraser, Icons.delete_outline, "Silgi"),
@@ -674,7 +572,7 @@ class ColoringPainter extends CustomPainter {
   final List<PaintOp> operations;
   final Color secondaryColor;
 
-  ColoringPainter({this.template, required this.operations, required this.secondaryColor, Listenable? repaint}) : super(repaint: repaint);
+  ColoringPainter({this.template, required this.operations, required this.secondaryColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -704,7 +602,5 @@ class ColoringPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant ColoringPainter oldDelegate) => 
-      oldDelegate.operations.length != operations.length || 
-      (operations.isNotEmpty && operations.last is PathOp && (operations.last as PathOp).points.length != (oldDelegate.operations.last as PathOp).points.length);
+  bool shouldRepaint(covariant ColoringPainter oldDelegate) => true;
 }
