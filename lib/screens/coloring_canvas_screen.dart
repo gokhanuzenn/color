@@ -579,8 +579,5 @@ class ColoringPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant ColoringPainter oldDelegate) {
-    return oldDelegate.operations.length != operations.length || oldDelegate.cachedCount != cachedCount ||
-           (operations.isNotEmpty && operations.last is PathOp && (operations.last as PathOp).points.length != (oldDelegate.operations.last as PathOp).points.length);
-  }
+  bool shouldRepaint(covariant ColoringPainter oldDelegate) => true;
 }
