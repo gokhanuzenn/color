@@ -36,6 +36,11 @@ class CategoryScreen extends StatelessWidget {
     ColoringCategory(id: 'robot', titleTurkish: 'Süper Robotlar', count: 1, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
     ColoringCategory(id: 'doga', titleTurkish: 'Doğa & Çiçekler', count: 1, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
     ColoringCategory(id: 'canavar', titleTurkish: 'Sevimli Canavarlar', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
+    ColoringCategory(id: 'kahraman', titleTurkish: 'Süper Kahramanlar', count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: 'ciftlik', titleTurkish: 'Sevimli Çiftlik', count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: 'meslekler', titleTurkish: 'Eğlenceli Meslekler', count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: 'harfler', titleTurkish: 'Harfler Dünyası', count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: 'oyuncak', titleTurkish: 'Oyuncak Dünyası', count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
   ];
 
   @override
