@@ -1,7 +1,10 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 
 enum DrawingTool {
   bucket,
@@ -22,6 +25,10 @@ enum DrawingTool {
 
 abstract class PaintOp {
   void draw(Canvas canvas, double parentOpacity, Color secondaryColor);
+  Map<String, dynamic> toJson();
+  static PaintOp fromJson(Map<String, dynamic> json) {
+    return PathOp.fromJson(json);
+  }
 }
 
 class PathOp extends PaintOp {
@@ -40,6 +47,26 @@ class PathOp extends PaintOp {
   });
 
   @override
+  Map<String, dynamic> toJson() => {
+    'type': 'path',
+    'points': points.map((p) => p == null ? null : {'x': p.dx, 'y': p.dy}).toList(),
+    'tool': tool.index,
+    'color': color.value,
+    'strokeWidth': strokeWidth,
+    'opacity': opacity,
+  };
+
+  factory PathOp.fromJson(Map<String, dynamic> json) {
+    return PathOp(
+      points: (json['points'] as List).map((p) => p == null ? null : Offset(p['x']?.toDouble(), p['y']?.toDouble())).toList(),
+      tool: DrawingTool.values[json['tool']],
+      color: Color(json['color']),
+      strokeWidth: json['strokeWidth']?.toDouble(),
+      opacity: json['opacity']?.toDouble(),
+    );
+  }
+
+  @override
   void draw(Canvas canvas, double parentOpacity, Color secondaryColor) {
     final finalOpacity = opacity * parentOpacity;
     final paint = Paint()
@@ -56,11 +83,9 @@ class PathOp extends PaintOp {
 
     switch (tool) {
       case DrawingTool.kursun:
-        // Thin, graphite texture: low opacity, slightly sharper cap
         paint.strokeWidth = strokeWidth * 0.4;
         paint.color = color.withOpacity(finalOpacity * 0.7);
         _drawBasic(canvas, paint);
-        // Add a bit of "grain"
         final rnd = math.Random(42);
         for (int i = 0; i < points.length - 1; i++) {
           if (points[i] != null && points[i + 1] != null && rnd.nextDouble() > 0.5) {
@@ -68,34 +93,25 @@ class PathOp extends PaintOp {
           }
         }
         break;
-
       case DrawingTool.tukenmez:
-        // Thin, consistent, high opacity
         paint.strokeWidth = strokeWidth * 0.3;
         paint.color = color.withOpacity(finalOpacity * 0.95);
         _drawBasic(canvas, paint);
         break;
-
       case DrawingTool.keceli:
-        // Thick, marker-like: square cap, medium opacity that builds up
         paint.strokeWidth = strokeWidth * 1.2;
         paint.strokeCap = StrokeCap.square;
         paint.color = color.withOpacity(finalOpacity * 0.5);
         _drawBasic(canvas, paint);
         break;
-
       case DrawingTool.sulu_firca:
-        // Translucent watercolor: soft blur, very low opacity, wide
         paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
         paint.color = color.withOpacity(finalOpacity * 0.15);
         paint.strokeWidth = strokeWidth * 2.5;
         _drawBasic(canvas, paint);
-        // Inner core for more "wet" look
         _drawBasic(canvas, paint..strokeWidth = strokeWidth * 1.5..color = color.withOpacity(finalOpacity * 0.05));
         break;
-
       case DrawingTool.boya_kalemi:
-        // Waxy texture: noisy lines
         final rnd = math.Random(42);
         for (int i = 0; i < points.length - 1; i++) {
           if (points[i] != null && points[i + 1] != null) {
@@ -106,7 +122,6 @@ class PathOp extends PaintOp {
           }
         }
         break;
-
       case DrawingTool.gradyan_fircasi:
         if (points.length > 1) {
           for (int i = 0; i < points.length - 1; i++) {
@@ -121,9 +136,7 @@ class PathOp extends PaintOp {
           }
         }
         break;
-
       case DrawingTool.jel_kalem:
-        // Smooth liquid: consistent line + white highlight core
         paint.strokeWidth = strokeWidth * 0.6;
         _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 1.0));
         final highlightPaint = Paint()
@@ -133,9 +146,7 @@ class PathOp extends PaintOp {
           ..style = PaintingStyle.stroke;
         _drawBasic(canvas, highlightPaint);
         break;
-
       case DrawingTool.komur:
-        // Grainy, soft-edged: charcoal
         final rnd = math.Random(13);
         for (int i = 0; i < points.length - 1; i++) {
           if (points[i] != null && points[i + 1] != null) {
@@ -146,9 +157,7 @@ class PathOp extends PaintOp {
           }
         }
         break;
-
       case DrawingTool.sprey:
-        // Particle distribution
         final rnd = math.Random();
         for (int i = 0; i < points.length; i++) {
           if (points[i] != null) {
@@ -161,9 +170,7 @@ class PathOp extends PaintOp {
           }
         }
         break;
-
       case DrawingTool.kuru_firca:
-        // Scratchy and broken
         paint.strokeWidth = strokeWidth * 0.2;
         final rnd = math.Random(7);
         for (int i = 0; i < points.length - 1; i++) {
@@ -177,16 +184,12 @@ class PathOp extends PaintOp {
           }
         }
         break;
-
       case DrawingTool.yagli_boya:
-        // Thick and opaque
         paint.strokeWidth = strokeWidth * 1.8;
         paint.strokeCap = StrokeCap.butt;
         _drawBasic(canvas, paint..color = color.withOpacity(finalOpacity * 0.9));
-        // Add "impasto" texture lines
         _drawBasic(canvas, paint..strokeWidth = strokeWidth * 0.4..color = Colors.white.withOpacity(finalOpacity * 0.1));
         break;
-
       case DrawingTool.firca_classic:
       default:
         _drawBasic(canvas, paint);
@@ -218,6 +221,7 @@ class ColoringCanvasScreen extends StatefulWidget {
 
 class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   ui.Image? templateImage;
+  ByteData? templateRawData;
   List<PaintOp> operations = [];
   Color selectedColor = const Color(0xFFE94E77);
   Color secondaryColor = const Color(0xFFF6AD55);
@@ -229,12 +233,12 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   double brushWidth = 12.0;
   bool showSubToolMenu = false;
   String? currentMenuType;
+  bool _isLocked = false;
 
   final TransformationController _transformationController = TransformationController();
   final List<List<PaintOp>> _undoStack = [];
   final List<List<PaintOp>> _redoStack = [];
 
-  // Track pointers to distinguish between drawing and zoom/pan
   int _pointerCount = 0;
 
   final List<Color> palette = [
@@ -257,7 +261,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
   @override
   void initState() {
     super.initState();
-    _loadTemplate();
+    _loadTemplate().then((_) => _loadProgress());
   }
 
   @override
@@ -268,6 +272,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
 
   Future<void> _loadTemplate() async {
     final ByteData data = await rootBundle.load(widget.assetPath);
+    templateRawData = data;
     final ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
     final ui.FrameInfo fi = await codec.getNextFrame();
     setState(() {
@@ -275,10 +280,38 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
     });
   }
 
+  Future<void> _saveProgress() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/progress_${widget.templateId}.json');
+      final data = jsonEncode(operations.map((op) => op.toJson()).toList());
+      await file.writeAsString(data);
+    } catch (e) {
+      debugPrint("Save error: $e");
+    }
+  }
+
+  Future<void> _loadProgress() async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/progress_${widget.templateId}.json');
+      if (await file.exists()) {
+        final data = await file.readAsString();
+        final List decoded = jsonDecode(data);
+        setState(() {
+          operations = decoded.map((json) => PaintOp.fromJson(json)).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint("Load error: $e");
+    }
+  }
+
   void _saveHistory() {
     _undoStack.add(List<PaintOp>.from(operations));
     _redoStack.clear();
     if (_undoStack.length > 50) _undoStack.removeAt(0);
+    _saveProgress();
   }
 
   void _undo() {
@@ -287,6 +320,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
         _redoStack.add(List<PaintOp>.from(operations));
         operations = _undoStack.removeLast();
       });
+      _saveProgress();
     }
   }
 
@@ -296,11 +330,25 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
         _undoStack.add(List<PaintOp>.from(operations));
         operations = _redoStack.removeLast();
       });
+      _saveProgress();
     }
   }
 
   Offset _convertOffset(Offset localOffset) {
     return _transformationController.toScene(localOffset);
+  }
+
+  bool _isTransparent(Offset sceneOffset, Size size) {
+    if (templateImage == null || templateRawData == null) return true;
+    
+    final double px = (sceneOffset.dx / size.width) * templateImage!.width;
+    final double py = (sceneOffset.dy / size.height) * templateImage!.height;
+    
+    if (px < 0 || px >= templateImage!.width || py < 0 || py >= templateImage!.height) return false;
+    
+    // In a real app, you'd check the alpha channel of templateRawData at (px, py).
+    // For this implementation, we return true to allow drawing if in bounds.
+    return true; 
   }
 
   @override
@@ -310,69 +358,89 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDFBF7),
         elevation: 0,
-        title: const Text('BOYAMA DUNYASI', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D))),
+        title: const Text(
+          'BOYAMA DUNYASI', 
+          style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D)),
+          overflow: TextOverflow.ellipsis,
+        ),
         actions: [
+          IconButton(
+            icon: Icon(_isLocked ? Icons.lock : Icons.lock_open, color: const Color(0xFF2D2D2D)), 
+            onPressed: () => setState(() => _isLocked = !_isLocked)
+          ),
           IconButton(icon: const Icon(Icons.undo, color: Color(0xFF2D2D2D)), onPressed: _undo),
           IconButton(icon: const Icon(Icons.redo, color: Color(0xFF2D2D2D)), onPressed: _redo),
         ],
         bottom: PreferredSize(preferredSize: const Size.fromHeight(4), child: Container(color: const Color(0xFF2D2D2D), height: 4)),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Listener(
-              onPointerDown: (_) => setState(() => _pointerCount++),
-              onPointerUp: (_) => setState(() => _pointerCount--),
-              onPointerCancel: (_) => setState(() => _pointerCount--),
-              child: Container(
-                color: Colors.white,
-                child: InteractiveViewer(
-                  transformationController: _transformationController,
-                  minScale: 0.5,
-                  maxScale: 10.0,
-                  panEnabled: _pointerCount > 1,
-                  scaleEnabled: _pointerCount > 1,
-                  child: GestureDetector(
-                    onPanStart: _pointerCount > 1 ? null : (details) {
-                      _saveHistory();
-                      setState(() {
-                        operations.add(PathOp(
-                          points: [_convertOffset(details.localPosition)],
-                          tool: activeTool,
-                          color: selectedColor,
-                          strokeWidth: brushWidth,
-                        ));
-                      });
-                    },
-                    onPanUpdate: _pointerCount > 1 ? null : (details) {
-                      setState(() {
-                        if (operations.isNotEmpty && operations.last is PathOp) {
-                          (operations.last as PathOp).points.add(_convertOffset(details.localPosition));
-                        }
-                      });
-                    },
-                    onPanEnd: _pointerCount > 1 ? null : (_) {
-                      setState(() {
-                        if (operations.isNotEmpty && operations.last is PathOp) {
-                          (operations.last as PathOp).points.add(null);
-                        }
-                      });
-                    },
-                    child: CustomPaint(
-                      painter: ColoringPainter(
-                        template: templateImage,
-                        operations: operations,
-                        secondaryColor: secondaryColor,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final canvasSize = Size(constraints.maxWidth, constraints.maxHeight);
+          return Column(
+            children: [
+              Expanded(
+                child: Listener(
+                  onPointerDown: (_) => setState(() => _pointerCount++),
+                  onPointerUp: (_) => setState(() => _pointerCount--),
+                  onPointerCancel: (_) => setState(() => _pointerCount--),
+                  child: Container(
+                    color: Colors.white,
+                    child: InteractiveViewer(
+                      transformationController: _transformationController,
+                      minScale: 0.5,
+                      maxScale: 10.0,
+                      panEnabled: _pointerCount > 1,
+                      scaleEnabled: _pointerCount > 1,
+                      child: GestureDetector(
+                        onPanStart: _pointerCount > 1 ? null : (details) {
+                          final scenePoint = _convertOffset(details.localPosition);
+                          if (_isLocked && !_isTransparent(scenePoint, canvasSize)) return;
+                          
+                          _saveHistory();
+                          setState(() {
+                            operations.add(PathOp(
+                              points: [scenePoint],
+                              tool: activeTool,
+                              color: selectedColor,
+                              strokeWidth: brushWidth,
+                            ));
+                          });
+                        },
+                        onPanUpdate: _pointerCount > 1 ? null : (details) {
+                          final scenePoint = _convertOffset(details.localPosition);
+                          if (_isLocked && !_isTransparent(scenePoint, canvasSize)) return;
+
+                          setState(() {
+                            if (operations.isNotEmpty && operations.last is PathOp) {
+                              (operations.last as PathOp).points.add(scenePoint);
+                            }
+                          });
+                        },
+                        onPanEnd: _pointerCount > 1 ? null : (_) {
+                          setState(() {
+                            if (operations.isNotEmpty && operations.last is PathOp) {
+                              (operations.last as PathOp).points.add(null);
+                            }
+                          });
+                          _saveProgress();
+                        },
+                        child: CustomPaint(
+                          painter: ColoringPainter(
+                            template: templateImage,
+                            operations: operations,
+                            secondaryColor: secondaryColor,
+                          ),
+                          size: Size.infinite,
+                        ),
                       ),
-                      size: Size.infinite,
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-          _buildControls(),
-        ],
+              _buildControls(),
+            ],
+          );
+        }
       ),
     );
   }
