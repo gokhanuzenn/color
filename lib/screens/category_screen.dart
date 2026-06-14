@@ -28,6 +28,14 @@ class CategoryScreen extends StatelessWidget {
     ColoringCategory(id: 'sayilar', titleTurkish: 'Sayılar', count: 10, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
     ColoringCategory(id: 'meyveler', titleTurkish: 'Meyveler & Yiyecekler', count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
     ColoringCategory(id: 'vahsi_dostlar', titleTurkish: 'Vahşi Dostlar', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(id: 'uzay', titleTurkish: 'Uzay Maceraları', count: 1, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
+    ColoringCategory(id: 'dinozor', titleTurkish: 'Dinozorlar Dünyası', count: 1, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
+    ColoringCategory(id: 'prenses', titleTurkish: 'Prensesler & Şatolar', count: 1, themeColor: const Color(0xFFE91E63), icon: Icons.auto_awesome),
+    ColoringCategory(id: 'okyanus', titleTurkish: 'Okyanus Altı', count: 1, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
+    ColoringCategory(id: 'masal', titleTurkish: 'Masal Dünyası', count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: 'robot', titleTurkish: 'Süper Robotlar', count: 1, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
+    ColoringCategory(id: 'doga', titleTurkish: 'Doğa & Çiçekler', count: 1, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
+    ColoringCategory(id: 'canavar', titleTurkish: 'Sevimli Canavarlar', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
   ];
 
   @override
@@ -98,6 +106,7 @@ class CategoryCard extends StatelessWidget {
               categoryId: category.id,
               categoryTitle: category.titleTurkish,
               themeColor: category.themeColor,
+              templateCount: category.count,
             ),
           ),
         );

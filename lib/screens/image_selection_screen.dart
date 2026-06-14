@@ -17,20 +17,19 @@ class ImageSelectionScreen extends StatelessWidget {
   final String categoryId;
   final String categoryTitle;
   final Color themeColor;
+  final int templateCount;
 
   const ImageSelectionScreen({
     super.key,
     required this.categoryId,
     required this.categoryTitle,
     required this.themeColor,
+    required this.templateCount,
   });
 
   List<ColoringTemplate> _getTemplates() {
-    int count = 11;
     String prefix = categoryId;
-    if (categoryId == 'sayilar') count = 10;
-
-    return List.generate(count, (index) {
+    return List.generate(templateCount, (index) {
       final numberStr = (index + 1).toString().padLeft(3, '0');
       return ColoringTemplate(
         id: '${prefix}_$numberStr',
