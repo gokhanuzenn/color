@@ -18,9 +18,9 @@ class ColoringCategory {
 }
 
 class CategoryScreen extends StatelessWidget {
-  CategoryScreen({super.key});
+  const CategoryScreen({super.key});
 
-  final List<ColoringCategory> categories = [
+  static final List<ColoringCategory> categories = [
     ColoringCategory(id: 'erkek_karakter', titleTurkish: 'Erkek Karakterler', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.face),
     ColoringCategory(id: 'kiz_karakter', titleTurkish: 'Kız Karakterler', count: 11, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
     ColoringCategory(id: 'sevimli_dostlar', titleTurkish: 'Sevimli Dostlar', count: 11, themeColor: const Color(0xFFFFD1DC), icon: Icons.pets),
@@ -53,7 +53,7 @@ class CategoryScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
-              'Kategori Selectin',
+              'Kategori Seçin',
               style: TextStyle(
                 color: Color(0xFF2D2D2D),
                 fontSize: 16,

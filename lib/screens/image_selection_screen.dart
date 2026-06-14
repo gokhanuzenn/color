@@ -18,7 +18,7 @@ class ImageSelectionScreen extends StatelessWidget {
   final String categoryTitle;
   final Color themeColor;
 
-  ImageSelectionScreen({
+  const ImageSelectionScreen({
     super.key,
     required this.categoryId,
     required this.categoryTitle,
@@ -33,8 +33,8 @@ class ImageSelectionScreen extends StatelessWidget {
     return List.generate(count, (index) {
       final numberStr = (index + 1).toString().padLeft(3, '0');
       return ColoringTemplate(
-        id: '${prefix}_\$numberStr',
-        assetPath: 'assets/templates/\${prefix}_\$numberStr.png',
+        id: '${prefix}_$numberStr',
+        assetPath: 'assets/templates/${prefix}_$numberStr.png',
         categoryId: categoryId,
       );
     });
@@ -154,7 +154,8 @@ class TemplateCard extends StatelessWidget {
               ),
             ),
             Center(
-              child: Padding(padding: const EdgeInsets.all(12.0),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
                 child: Image.asset(
                   template.assetPath,
                   fit: BoxFit.contain,
@@ -185,7 +186,7 @@ class TemplateCard extends StatelessWidget {
                   border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
                 ),
                 child: Text(
-                  '#\${template.id.split('_').last}',
+                  '#${template.id.split('_').last}',
                   style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D)),
                 ),
               ),
