@@ -5,10 +5,13 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:color_world/mock_billing.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 enum DrawingTool {
   kursun,
@@ -169,6 +172,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   bool showSubToolMenu = false;
   String? currentMenuType;
 
+  final GlobalKey _repaintBoundaryKey = GlobalKey();
   final TransformationController _transformationController = TransformationController();
   int _pointerCount = 0;
 
@@ -178,7 +182,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   ui.Image? _cachedDrawing;
   int _lastCachedCount = 0;
 
-  // Interstitial Ad variables
   InterstitialAd? _interstitialAd;
   Timer? _adTimer;
   final String _adUnitId = 'ca-app-pub-3940256099942544/1033173712';
@@ -194,12 +197,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     const Color(0xFFFF0000), const Color(0xFF00FF00), const Color(0xFF0000FF),
     const Color(0xFFFFFF00), const Color(0xFF00FFFF), const Color(0xFFFF00FF),
     const Color(0xFFFFA500), const Color(0xFF800080), const Color(0xFF008000),
-    const Color(0xFF800000), const Color(0xFF000080), const Color(0xFF808000),
-    const Color(0xFF008080), const Color(0xFFC0C0C0), const Color(0xFFFFC0CB),
-    const Color(0xFFF0E68C), const Color(0xFFE6E6FA), const Color(0xFFFFF0F5),
-    const Color(0xFFFAF0E6), const Color(0xFF7B68EE), const Color(0xFF48D1CC),
-    const Color(0xFFB0C4DE), const Color(0xFF20B2AA), const Color(0xFF778899),
-    const Color(0xFFBC8F8F), const Color(0xFF4682B4), const Color(0xFFD2B48C),
+    const Color(0xFF800000), const Color(0xFF000080), const Color(0xFF808080),
   ];
 
   @override
@@ -234,7 +232,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   void _loadInterstitialAd() {
     if (_isAdLoading) return;
     _isAdLoading = true;
-    
     InterstitialAd.load(
       adUnitId: _adUnitId,
       request: const AdRequest(),
@@ -254,7 +251,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   void _showInterstitialAd() {
     if (_interstitialAd == null) return;
-    
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
@@ -265,7 +261,6 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         _interstitialAd = null;
       },
     );
-
     _interstitialAd!.show();
   }
 
@@ -370,6 +365,28 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     }
   }
 
+  Future<void> _exportToGallery() async {
+    try {
+      final status = await Permission.storage.request();
+      if (!status.isGranted) return;
+
+      RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      final result = await ImageGallerySaver.saveImage(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('RESİM GALERİYE KAYDEDİLDİ!')));
+      }
+    } catch (e) {
+      debugPrint('Error exporting image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('KAYDEDİLİRKEN HATA OLUŞTU.')));
+      }
+    }
+  }
+
   Offset _screenToPixel(Offset screenPos, Size size) {
     if (templateImage == null) return screenPos;
     double scaleX = size.width / templateImage!.width;
@@ -384,10 +401,19 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDFBF7),
         elevation: 0,
-        title: const Text('BOYAMA DUNYASI', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D))),
+        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Color(0xFF2D2D2D)), onPressed: () => Navigator.pop(context)),
+        title: const Text('BOYAMA DUNYASI', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D), fontSize: 16)),
         actions: [
           IconButton(icon: const Icon(Icons.undo, color: Color(0xFF2D2D2D)), onPressed: _undo),
           IconButton(icon: const Icon(Icons.redo, color: Color(0xFF2D2D2D)), onPressed: _redo),
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: TextButton(
+              onPressed: _exportToGallery,
+              style: TextButton.styleFrom(backgroundColor: const Color(0xFF06D6A0), side: const BorderSide(color: Color(0xFF2D2D2D), width: 2)),
+              child: const Text('KAYDET', style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 10)),
+            ),
+          ),
         ],
         bottom: PreferredSize(preferredSize: const Size.fromHeight(4), child: Container(color: const Color(0xFF2D2D2D), height: 4)),
       ),
@@ -411,29 +437,32 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                       builder: (context, constraints) {
                         final size = constraints.biggest;
                         return GestureDetector(
-                          onPanStart: _pointerCount > 1 ? null : (details) {
+                          onPanStart: (details) {
+                            if (_pointerCount > 1) return;
                             _saveHistory();
                             final pixelPos = _screenToPixel(details.localPosition, size);
                             setState(() {
                               operations.add(PathOp(points: [pixelPos], tool: activeTool, color: selectedColor, strokeWidth: brushWidth));
                             });
                           },
-                          onPanUpdate: _pointerCount > 1 ? null : (details) {
+                          onPanUpdate: (details) {
+                            if (_pointerCount > 1) return;
                             if (operations.isNotEmpty && operations.last is PathOp) {
                               final pixelPos = _screenToPixel(details.localPosition, size);
                               final op = operations.last as PathOp;
-                              if (op.points.isNotEmpty && op.points.last != null && (pixelPos - op.points.last!).distance < 1.0) return;
+                              if (op.points.isNotEmpty && op.points.last != null && (pixelPos - op.points.last!).distance < 0.5) return;
                               setState(() {
                                 op.points.add(pixelPos);
                                 op.invalidate();
                               });
                             }
                           },
-                          onPanEnd: _pointerCount > 1 ? null : (_) {
+                          onPanEnd: (details) {
                             if (operations.isNotEmpty && operations.last is PathOp) (operations.last as PathOp).points.add(null);
                             _updateCache();
                           },
                           child: RepaintBoundary(
+                            key: _repaintBoundaryKey,
                             child: CustomPaint(
                               painter: ColoringPainter(
                                 template: templateImage,
@@ -498,7 +527,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       ),
       child: Row(
         children: [
-          const Text("BOYUT", style: TextStyle(fontWeight: FontWeight.w900)),
+          const Text("BOYUT", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
           Expanded(
             child: Slider(
               value: brushWidth, min: 2.0, max: 100.0,
@@ -516,9 +545,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     if (!showSubToolMenu || currentMenuType == null) return const SizedBox.shrink();
     final subTools = currentMenuType == 'Kalem'
         ? [
-            {'tool': DrawingTool.kursun, 'label': 'Kursun'},
-            {'tool': DrawingTool.tukenmez, 'label': 'Tukenmez'},
-            {'tool': DrawingTool.keceli, 'label': 'Keceli'},
+            {'tool': DrawingTool.kursun, 'label': '2B'},
+            {'tool': DrawingTool.tukenmez, 'label': '4B'},
+            {'tool': DrawingTool.keceli, 'label': '6B'},
             {'tool': DrawingTool.jel_kalem, 'label': 'Jel'},
             {'tool': DrawingTool.komur, 'label': 'Komur'},
             {'tool': DrawingTool.boya_kalemi, 'label': 'Boya'},
@@ -535,27 +564,31 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       height: 60, margin: const EdgeInsets.only(bottom: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         itemCount: subTools.length,
         itemBuilder: (context, index) {
           final st = subTools[index];
           final tool = st['tool'] as DrawingTool;
           bool isSelected = activeTool == tool;
-          return GestureDetector(
-            onTap: () => setState(() {
-              activeTool = tool;
-              if (currentMenuType == 'Kalem') _lastPencilTool = tool;
-              else if (currentMenuType == 'Firca') _lastBrushTool = tool;
-            }),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFFFD166) : Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-                boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(30),
+              onTap: () => setState(() {
+                activeTool = tool;
+                if (currentMenuType == 'Kalem') _lastPencilTool = tool;
+                else if (currentMenuType == 'Firca') _lastBrushTool = tool;
+              }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFFFFD166) : Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                  boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
+                ),
+                child: Center(child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12))),
               ),
-              child: Center(child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14))),
             ),
           );
         }
@@ -575,16 +608,16 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       child: Column(
         children: [
           Container(
-            width: 60, height: 60,
+            width: 54, height: 54,
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFFFFD166) : Colors.white,
               border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
               boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
             ),
-            child: Icon(icon, color: const Color(0xFF2D2D2D), size: 30),
+            child: Icon(icon, color: const Color(0xFF2D2D2D), size: 28),
           ),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+          Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
         ],
       ),
     );
@@ -592,19 +625,20 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   Widget _buildPalette() {
     return SizedBox(
-      height: 50,
+      height: 44,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         itemCount: palette.length,
         itemBuilder: (context, index) => GestureDetector(
           onTap: () => setState(() { secondaryColor = selectedColor; selectedColor = palette[index]; }),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 6),
-            width: 44, height: 44,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 36, height: 36,
             decoration: BoxDecoration(
               color: palette[index], shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 5 : 3),
-              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(3, 3))],
+              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 4 : 2),
+              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
             ),
           ),
         ),
