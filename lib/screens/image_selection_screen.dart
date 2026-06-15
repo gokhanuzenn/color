@@ -110,7 +110,6 @@ class TemplateCard extends StatelessWidget {
   final Color themeColor;
 
   const TemplateCard({
-    super.key,
     required this.template,
     required this.themeColor,
   });

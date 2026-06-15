@@ -3,9 +3,12 @@ import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:color_world/mock_billing.dart';
 
 enum DrawingTool {
   kursun,
@@ -175,6 +178,13 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   ui.Image? _cachedDrawing;
   int _lastCachedCount = 0;
 
+  // Interstitial Ad variables
+  InterstitialAd? _interstitialAd;
+  Timer? _adTimer;
+  final String _adUnitId = 'ca-app-pub-3940256099942544/1033173712';
+  bool _isAdLoading = false;
+  bool _isAdFree = false;
+
   final List<Color> palette = [
     const Color(0xFF2D2D2D), const Color(0xFFE94E77), const Color(0xFFFF6B6B),
     const Color(0xFFF6AD55), const Color(0xFFFFD166), const Color(0xFF06D6A0),
@@ -200,13 +210,70 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Future<void> _initCanvas() async {
+    _isAdFree = await MockBillingManager.isAdFree();
+    if (!_isAdFree) {
+      _startAdTimer();
+    }
     await _loadTemplate();
     await _loadProgress();
+  }
+
+  Future<void> _startAdTimer() async {
+    _adTimer?.cancel();
+    _adTimer = Timer.periodic(const Duration(seconds: 180), (timer) async {
+      final adFree = await MockBillingManager.isAdFree();
+      if (adFree) {
+        _isAdFree = true;
+        _adTimer?.cancel();
+        return;
+      }
+      _loadInterstitialAd();
+    });
+  }
+
+  void _loadInterstitialAd() {
+    if (_isAdLoading) return;
+    _isAdLoading = true;
+    
+    InterstitialAd.load(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          _isAdLoading = false;
+          _showInterstitialAd();
+        },
+        onAdFailedToLoad: (error) {
+          debugPrint('InterstitialAd failed to load: $error');
+          _isAdLoading = false;
+        },
+      ),
+    );
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd == null) return;
+    
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _interstitialAd = null;
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
+        _interstitialAd = null;
+      },
+    );
+
+    _interstitialAd!.show();
   }
 
   @override
   void dispose() {
     _saveProgress();
+    _adTimer?.cancel();
+    _interstitialAd?.dispose();
     _transformationController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();

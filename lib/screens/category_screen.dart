@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/image_selection_screen.dart';
+import 'package:color_world/mock_billing.dart';
 
 class ColoringCategory {
   final String id;
@@ -17,31 +18,179 @@ class ColoringCategory {
   });
 }
 
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
 
+  @override
+  State<CategoryScreen> createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  bool _isAdFree = false;
+  final TextEditingController _promoController = TextEditingController();
+  final String _validPromoCode = 'RuzgarveGoktug2026';
+
   static final List<ColoringCategory> categories = [
-    ColoringCategory(id: 'erkek_karakter', titleTurkish: 'Erkek Karakterler', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.face),
-    ColoringCategory(id: 'kiz_karakter', titleTurkish: 'Kız Karakterler', count: 11, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
-    ColoringCategory(id: 'sevimli_dostlar', titleTurkish: 'Sevimli Dostlar', count: 11, themeColor: const Color(0xFFFFD1DC), icon: Icons.pets),
-    ColoringCategory(id: 'tasitlar', titleTurkish: 'Taşıtlar', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
-    ColoringCategory(id: 'sayilar', titleTurkish: 'Sayılar', count: 10, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
-    ColoringCategory(id: 'meyveler', titleTurkish: 'Meyveler & Yiyecekler', count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
-    ColoringCategory(id: 'vahsi_dostlar', titleTurkish: 'Vahşi Dostlar', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
-    ColoringCategory(id: 'uzay', titleTurkish: 'Uzay Maceraları', count: 1, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
-    ColoringCategory(id: 'dinozor', titleTurkish: 'Dinozorlar Dünyası', count: 1, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
-    ColoringCategory(id: 'prenses', titleTurkish: 'Prensesler & Şatolar', count: 1, themeColor: const Color(0xFFE91E63), icon: Icons.auto_awesome),
-    ColoringCategory(id: 'okyanus', titleTurkish: 'Okyanus Altı', count: 1, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
-    ColoringCategory(id: 'masal', titleTurkish: 'Masal Dünyası', count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
-    ColoringCategory(id: 'robot', titleTurkish: 'Süper Robotlar', count: 1, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
-    ColoringCategory(id: 'doga', titleTurkish: 'Doğa & Çiçekler', count: 1, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
-    ColoringCategory(id: 'canavar', titleTurkish: 'Sevimli Canavarlar', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
-    ColoringCategory(id: 'kahraman', titleTurkish: 'Süper Kahramanlar', count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
-    ColoringCategory(id: 'ciftlik', titleTurkish: 'Sevimli Çiftlik', count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
-    ColoringCategory(id: 'meslekler', titleTurkish: 'Eğlenceli Meslekler', count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
-    ColoringCategory(id: 'harfler', titleTurkish: 'Harfler Dünyası', count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
-    ColoringCategory(id: 'oyuncak', titleTurkish: 'Oyuncak Dünyası', count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
+    ColoringCategory(id: 'animal', titleTurkish: 'Hayvanlar', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
+    ColoringCategory(id: 'girl', titleTurkish: 'Kız Karakter', count: 11, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
+    ColoringCategory(id: 'car', titleTurkish: 'Taşıtlar', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
+    ColoringCategory(id: 'number', titleTurkish: 'Sayılar', count: 9, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
+    ColoringCategory(id: 'food', titleTurkish: 'Yiyecekler', count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
+    ColoringCategory(id: 'nature', titleTurkish: 'Doğa', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(id: 'space', titleTurkish: 'Uzay Maceraları', count: 1, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
+    ColoringCategory(id: 'dino', titleTurkish: 'Dinozor Dünyası', count: 1, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
+    ColoringCategory(id: 'magic', titleTurkish: 'Sihirli Dünya', count: 1, themeColor: const Color(0xFFE91E63), icon: Icons.auto_awesome),
+    ColoringCategory(id: 'sea', titleTurkish: 'Deniz Altı', count: 12, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
+    ColoringCategory(id: 'fairy', titleTurkish: 'Masal Dünyası', count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: 'robot', titleTurkish: 'Robotlar', count: 1, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
+    ColoringCategory(id: 'flower', titleTurkish: 'Çiçekler', count: 11, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
+    ColoringCategory(id: 'emoji', titleTurkish: 'Emojiler', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
+    ColoringCategory(id: 'hero', titleTurkish: 'Kahramanlar', count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: 'farm', titleTurkish: 'Çiftlik', count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: 'job', titleTurkish: 'Meslekler', count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: 'letter', titleTurkish: 'Harfler Dünyası', count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: 'toy', titleTurkish: 'Oyuncak Dünyası', count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAdFreeStatus();
+  }
+
+  @override
+  void dispose() {
+    _promoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkAdFreeStatus() async {
+    final status = await MockBillingManager.isAdFree();
+    setState(() => _isAdFree = status);
+  }
+
+  Future<void> _handlePurchase() async {
+    await MockBillingManager.purchaseAdFree();
+    await _checkAdFreeStatus();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Reklamlar kaldırıldı! Teşekkürler.')),
+      );
+    }
+  }
+
+  void _showPromoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFDFBF7),
+              border: Border.all(color: const Color(0xFF2D2D2D), width: 4),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF2D2D2D),
+                  offset: Offset(8, 8),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'PROMOSYON KODU',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2D2D2D),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _promoController,
+                  decoration: InputDecoration(
+                    hintText: 'Kodu buraya yazın...',
+                    fillColor: Colors.white,
+                    filled: true,
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D), width: 3),
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D), width: 3),
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'İPTAL',
+                              style: TextStyle(fontWeight: FontWeight.w900),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async {
+                          if (_promoController.text.trim().toUpperCase() == _validPromoCode.toUpperCase()) {
+                            await MockBillingManager.purchaseAdFree();
+                            await _checkAdFreeStatus();
+                            if (mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Tebrikler! Kod kabul edildi.')),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Geçersiz kod!')),
+                            );
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF06D6A0),
+                            border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'ONAYLA',
+                              style: TextStyle(fontWeight: FontWeight.w900),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +209,47 @@ class CategoryScreen extends StatelessWidget {
             fontSize: 22,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF2D2D2D)),
+            onPressed: _showPromoDialog,
+          ),
+        ],
       ),
       body: Column(
         children: [
+          if (!_isAdFree)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                onTap: _handlePurchase,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700),
+                    border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0xFF2D2D2D),
+                        offset: Offset(4, 4),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'REKLAMLARI KALDIR (\$2.99)',
+                      style: TextStyle(
+                        color: Color(0xFF2D2D2D),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
