@@ -27,6 +27,11 @@ enum DrawingTool {
   kuru_firca,
   gradyan_fircasi,
   eraser,
+  pencil_hb,
+  pencil_2b,
+  pencil_4b,
+  pencil_6b,
+  pencil_9b,
 }
 
 abstract class PaintOp {
@@ -88,42 +93,88 @@ class PathOp extends PaintOp {
     }
 
     switch (tool) {
+      case DrawingTool.pencil_hb:
+      case DrawingTool.pencil_2b:
+      case DrawingTool.pencil_4b:
+      case DrawingTool.pencil_6b:
+      case DrawingTool.pencil_9b:
       case DrawingTool.kursun:
-        paint.strokeWidth = strokeWidth * 0.4;
-        paint.color = color.withOpacity(finalOpacity * 0.7);
+        final Map<DrawingTool, Map<String, dynamic>> config = {
+          DrawingTool.pencil_hb: {'a': 0.7, 'w': 0.1},
+          DrawingTool.pencil_2b: {'a': 0.6, 'w': 0.15},
+          DrawingTool.pencil_4b: {'a': 0.5, 'w': 0.2},
+          DrawingTool.pencil_6b: {'a': 0.4, 'w': 0.3},
+          DrawingTool.pencil_9b: {'a': 0.35, 'w': 0.4},
+          DrawingTool.kursun: {'a': 0.8, 'w': 0.1},
+        };
+        final settings = config[tool] ?? {'a': 0.8, 'w': 0.1};
+        paint.color = color.withOpacity(finalOpacity * (settings['a'] as double));
+        paint.strokeWidth = strokeWidth * (settings['w'] as double);
         canvas.drawPath(path, paint);
-        break;
-      case DrawingTool.sulu_firca:
-        paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-        paint.color = color.withOpacity(finalOpacity * 0.2);
-        paint.strokeWidth = strokeWidth * 2.0;
-        canvas.drawPath(path, paint);
-        break;
-      case DrawingTool.boya_kalemi:
+        
+        final noisePaint = Paint()..color = paint.color..style = PaintingStyle.fill;
         final rnd = math.Random(42);
-        for (int i = 0; i < points.length - 1; i++) {
-          if (points[i] != null && points[i + 1] != null) {
+        for (var p in points) {
+          if (p != null && rnd.nextDouble() > 0.4) {
+            canvas.drawRect(Rect.fromLTWH(p.dx + (rnd.nextDouble()-0.5)*3, p.dy + (rnd.nextDouble()-0.5)*3, 1, 1), noisePaint);
+          }
+        }
+        break;
+
+      case DrawingTool.sulu_firca:
+        paint.color = color.withOpacity(finalOpacity * 0.08);
+        paint.strokeWidth = strokeWidth;
+        final rnd = math.Random(42);
+        for (int i = 0; i < 3; i++) {
+          final bristlePath = ui.Path();
+          bool first = true;
+          double bWidth = strokeWidth * (1 - i * 0.15);
+          paint.strokeWidth = bWidth;
+          for (var p in points) {
+            if (p != null) {
+              Offset off = Offset((rnd.nextDouble()-0.5)*4, (rnd.nextDouble()-0.5)*4);
+              if (first) { bristlePath.moveTo(p.dx + off.dx, p.dy + off.dy); first = false; }
+              else bristlePath.lineTo(p.dx + off.dx, p.dy + off.dy);
+            } else { first = true; }
+          }
+          canvas.drawPath(bristlePath, paint);
+        }
+        break;
+
+      case DrawingTool.firca_classic:
+        paint.color = color.withOpacity(finalOpacity * 0.7);
+        const bristleCount = 10;
+        for (int i = 0; i < bristleCount; i++) {
+          final bPath = ui.Path();
+          bool first = true;
+          double offset = (i - bristleCount / 2) * (strokeWidth / bristleCount);
+          paint.strokeWidth = math.max(1, strokeWidth / 8);
+          for (var p in points) {
+            if (p != null) {
+              if (first) { bPath.moveTo(p.dx + offset, p.dy + offset); first = false; }
+              else bPath.lineTo(p.dx + offset, p.dy + offset);
+            } else { first = true; }
+          }
+          canvas.drawPath(bPath, paint);
+        }
+        break;
+
+      case DrawingTool.boya_kalemi:
+        paint.color = color.withOpacity(finalOpacity * 0.6);
+        paint.strokeWidth = strokeWidth * 0.8;
+        canvas.drawPath(path, paint);
+        final rnd = math.Random(42);
+        final grainPaint = Paint()..style = PaintingStyle.fill;
+        for (var p in points) {
+          if (p != null) {
             for (int j = 0; j < 5; j++) {
-              Offset off = Offset(rnd.nextDouble() * 5 - 2.5, rnd.nextDouble() * 5 - 2.5);
-              canvas.drawLine(points[i]! + off, points[i + 1]! + off, paint..color = color.withOpacity(finalOpacity * 0.5)..strokeWidth = strokeWidth * 0.3);
+              grainPaint.color = color.withOpacity(finalOpacity * rnd.nextDouble() * 0.4);
+              canvas.drawRect(Rect.fromLTWH(p.dx + (rnd.nextDouble()-0.5)*strokeWidth, p.dy + (rnd.nextDouble()-0.5)*strokeWidth, 2, 2), grainPaint);
             }
           }
         }
         break;
-      case DrawingTool.gradyan_fircasi:
-        if (points.length > 1) {
-          for (int i = 0; i < points.length - 1; i++) {
-            if (points[i] != null && points[i + 1] != null) {
-              paint.shader = ui.Gradient.linear(
-                points[i]!,
-                points[i + 1]!,
-                [secondaryColor.withOpacity(finalOpacity * 0.4), color.withOpacity(finalOpacity * 0.6)],
-              );
-              canvas.drawLine(points[i]!, points[i + 1]!, paint);
-            }
-          }
-        }
-        break;
+
       default:
         canvas.drawPath(path, paint);
     }
@@ -165,10 +216,10 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   List<PaintOp> operations = [];
   Color selectedColor = const Color(0xFFE94E77);
   Color secondaryColor = const Color(0xFFF6AD55);
-  DrawingTool activeTool = DrawingTool.kursun;
-  DrawingTool _lastPencilTool = DrawingTool.kursun;
-  DrawingTool _lastBrushTool = DrawingTool.firca_classic;
-  double brushWidth = 12.0;
+  DrawingTool activeTool = DrawingTool.pencil_hb;
+  DrawingTool _lastPencilTool = DrawingTool.pencil_hb;
+  DrawingTool _lastBrushTool = DrawingTool.sulu_firca;
+  double brushWidth = 20.0;
   bool showSubToolMenu = false;
   String? currentMenuType;
 
@@ -189,15 +240,20 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   bool _isAdFree = false;
 
   final List<Color> palette = [
-    const Color(0xFF2D2D2D), const Color(0xFFE94E77), const Color(0xFFFF6B6B),
-    const Color(0xFFF6AD55), const Color(0xFFFFD166), const Color(0xFF06D6A0),
-    const Color(0xFF118AB2), const Color(0xFF073B4C), const Color(0xFF9B59B6),
-    const Color(0xFFED4C67), const Color(0xFFA3CB38), const Color(0xFFC23616),
-    const Color(0xFF000000), const Color(0xFFFFFFFF), const Color(0xFF808080),
-    const Color(0xFFFF0000), const Color(0xFF00FF00), const Color(0xFF0000FF),
-    const Color(0xFFFFFF00), const Color(0xFF00FFFF), const Color(0xFFFF00FF),
-    const Color(0xFFFFA500), const Color(0xFF800080), const Color(0xFF008000),
-    const Color(0xFF800000), const Color(0xFF000080), const Color(0xFF808080),
+    const Color(0xFF000000), const Color(0xFFFFFFFF), const Color(0xFFFF0000),
+    const Color(0xFF00FF00), const Color(0xFF0000FF), const Color(0xFFFFFF00),
+    const Color(0xFFFFA500), const Color(0xFF800080), const Color(0xFFFFC0CB),
+    const Color(0xFFA52A2A), const Color(0xFF808080), const Color(0xFFADD8E6),
+    const Color(0xFF90EE90), const Color(0xFFE6E6FA), const Color(0xFFFFFFE0),
+    const Color(0xFFF5F5DC), const Color(0xFF800000), const Color(0xFF008000),
+    const Color(0xFF000080), const Color(0xFF808000), const Color(0xFFFF4500),
+    const Color(0xFF2E8B57), const Color(0xFF1E90FF), const Color(0xFFDA70D6),
+    const Color(0xFFB22222), const Color(0xFF00FA9A), const Color(0xFF4169E1),
+    const Color(0xFFFFD700), const Color(0xFFD2691E), const Color(0xFF32CD32),
+    const Color(0xFF00CED1), const Color(0xFFFF1493), const Color(0xFF8B4513),
+    const Color(0xFF7FFF00), const Color(0xFF4682B4), const Color(0xFFEE82EE),
+    const Color(0xFFCD853F), const Color(0xFFADFF2F), const Color(0xFF5F9EA0),
+    const Color(0xFFDB7093),
   ];
 
   @override
@@ -505,8 +561,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _toolButton(DrawingTool.kursun, Icons.edit, "Kalem", isMenu: true),
-              _toolButton(DrawingTool.firca_classic, Icons.brush, "Firca", isMenu: true),
+              _toolButton(DrawingTool.pencil_hb, Icons.edit, "Kalem", isMenu: true),
+              _toolButton(DrawingTool.sulu_firca, Icons.brush, "Firca", isMenu: true),
               _toolButton(DrawingTool.eraser, Icons.delete_outline, "Silgi"),
             ],
           ),
@@ -545,20 +601,19 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     if (!showSubToolMenu || currentMenuType == null) return const SizedBox.shrink();
     final subTools = currentMenuType == 'Kalem'
         ? [
-            {'tool': DrawingTool.kursun, 'label': '2B'},
-            {'tool': DrawingTool.tukenmez, 'label': '4B'},
-            {'tool': DrawingTool.keceli, 'label': '6B'},
-            {'tool': DrawingTool.jel_kalem, 'label': 'Jel'},
-            {'tool': DrawingTool.komur, 'label': 'Komur'},
-            {'tool': DrawingTool.boya_kalemi, 'label': 'Boya'},
+            {'tool': DrawingTool.pencil_hb, 'label': 'HB'},
+            {'tool': DrawingTool.kursun, 'label': 'Kurşun'},
+            {'tool': DrawingTool.pencil_2b, 'label': '2B'},
+            {'tool': DrawingTool.pencil_4b, 'label': '4B'},
+            {'tool': DrawingTool.pencil_6b, 'label': '6B'},
+            {'tool': DrawingTool.pencil_9b, 'label': '9B'},
+            {'tool': DrawingTool.komur, 'label': 'Kömür'},
           ]
         : [
-            {'tool': DrawingTool.firca_classic, 'label': 'Klasik'},
             {'tool': DrawingTool.sulu_firca, 'label': 'Sulu'},
-            {'tool': DrawingTool.sprey, 'label': 'Sprey'},
-            {'tool': DrawingTool.yagli_boya, 'label': 'Yagli'},
-            {'tool': DrawingTool.kuru_firca, 'label': 'Kuru'},
-            {'tool': DrawingTool.gradyan_fircasi, 'label': 'Gradyan'},
+            {'tool': DrawingTool.keceli, 'label': 'Keçeli'},
+            {'tool': DrawingTool.firca_classic, 'label': 'Klasik'},
+            {'tool': DrawingTool.boya_kalemi, 'label': 'Kuru'},
           ];
     return Container(
       height: 60, margin: const EdgeInsets.only(bottom: 8),
