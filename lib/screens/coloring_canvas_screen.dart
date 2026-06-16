@@ -3,9 +3,16 @@ import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:color_world/mock_billing.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:color_world/utils/localization.dart';
 
 enum DrawingTool {
   kursun,
@@ -21,6 +28,11 @@ enum DrawingTool {
   kuru_firca,
   gradyan_fircasi,
   eraser,
+  pencil_hb,
+  pencil_2b,
+  pencil_4b,
+  pencil_6b,
+  pencil_9b,
 }
 
 abstract class PaintOp {
@@ -82,42 +94,88 @@ class PathOp extends PaintOp {
     }
 
     switch (tool) {
+      case DrawingTool.pencil_hb:
+      case DrawingTool.pencil_2b:
+      case DrawingTool.pencil_4b:
+      case DrawingTool.pencil_6b:
+      case DrawingTool.pencil_9b:
       case DrawingTool.kursun:
-        paint.strokeWidth = strokeWidth * 0.4;
-        paint.color = color.withOpacity(finalOpacity * 0.7);
+        final Map<DrawingTool, Map<String, dynamic>> config = {
+          DrawingTool.pencil_hb: {'a': 0.7, 'w': 0.1},
+          DrawingTool.pencil_2b: {'a': 0.6, 'w': 0.15},
+          DrawingTool.pencil_4b: {'a': 0.5, 'w': 0.2},
+          DrawingTool.pencil_6b: {'a': 0.4, 'w': 0.3},
+          DrawingTool.pencil_9b: {'a': 0.35, 'w': 0.4},
+          DrawingTool.kursun: {'a': 0.8, 'w': 0.1},
+        };
+        final settings = config[tool] ?? {'a': 0.8, 'w': 0.1};
+        paint.color = color.withOpacity(finalOpacity * (settings['a'] as double));
+        paint.strokeWidth = strokeWidth * (settings['w'] as double);
         canvas.drawPath(path, paint);
-        break;
-      case DrawingTool.sulu_firca:
-        paint.maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
-        paint.color = color.withOpacity(finalOpacity * 0.2);
-        paint.strokeWidth = strokeWidth * 2.0;
-        canvas.drawPath(path, paint);
-        break;
-      case DrawingTool.boya_kalemi:
+        
+        final noisePaint = Paint()..color = paint.color..style = PaintingStyle.fill;
         final rnd = math.Random(42);
-        for (int i = 0; i < points.length - 1; i++) {
-          if (points[i] != null && points[i + 1] != null) {
+        for (var p in points) {
+          if (p != null && rnd.nextDouble() > 0.4) {
+            canvas.drawRect(Rect.fromLTWH(p.dx + (rnd.nextDouble()-0.5)*3, p.dy + (rnd.nextDouble()-0.5)*3, 1, 1), noisePaint);
+          }
+        }
+        break;
+
+      case DrawingTool.sulu_firca:
+        paint.color = color.withOpacity(finalOpacity * 0.08);
+        paint.strokeWidth = strokeWidth;
+        final rnd = math.Random(42);
+        for (int i = 0; i < 3; i++) {
+          final bristlePath = ui.Path();
+          bool first = true;
+          double bWidth = strokeWidth * (1 - i * 0.15);
+          paint.strokeWidth = bWidth;
+          for (var p in points) {
+            if (p != null) {
+              Offset off = Offset((rnd.nextDouble()-0.5)*4, (rnd.nextDouble()-0.5)*4);
+              if (first) { bristlePath.moveTo(p.dx + off.dx, p.dy + off.dy); first = false; }
+              else bristlePath.lineTo(p.dx + off.dx, p.dy + off.dy);
+            } else { first = true; }
+          }
+          canvas.drawPath(bristlePath, paint);
+        }
+        break;
+
+      case DrawingTool.firca_classic:
+        paint.color = color.withOpacity(finalOpacity * 0.7);
+        const bristleCount = 10;
+        for (int i = 0; i < bristleCount; i++) {
+          final bPath = ui.Path();
+          bool first = true;
+          double offset = (i - bristleCount / 2) * (strokeWidth / bristleCount);
+          paint.strokeWidth = math.max(1, strokeWidth / 8);
+          for (var p in points) {
+            if (p != null) {
+              if (first) { bPath.moveTo(p.dx + offset, p.dy + offset); first = false; }
+              else bPath.lineTo(p.dx + offset, p.dy + offset);
+            } else { first = true; }
+          }
+          canvas.drawPath(bPath, paint);
+        }
+        break;
+
+      case DrawingTool.boya_kalemi:
+        paint.color = color.withOpacity(finalOpacity * 0.6);
+        paint.strokeWidth = strokeWidth * 0.8;
+        canvas.drawPath(path, paint);
+        final rnd = math.Random(42);
+        final grainPaint = Paint()..style = PaintingStyle.fill;
+        for (var p in points) {
+          if (p != null) {
             for (int j = 0; j < 5; j++) {
-              Offset off = Offset(rnd.nextDouble() * 5 - 2.5, rnd.nextDouble() * 5 - 2.5);
-              canvas.drawLine(points[i]! + off, points[i + 1]! + off, paint..color = color.withOpacity(finalOpacity * 0.5)..strokeWidth = strokeWidth * 0.3);
+              grainPaint.color = color.withOpacity(finalOpacity * rnd.nextDouble() * 0.4);
+              canvas.drawRect(Rect.fromLTWH(p.dx + (rnd.nextDouble()-0.5)*strokeWidth, p.dy + (rnd.nextDouble()-0.5)*strokeWidth, 2, 2), grainPaint);
             }
           }
         }
         break;
-      case DrawingTool.gradyan_fircasi:
-        if (points.length > 1) {
-          for (int i = 0; i < points.length - 1; i++) {
-            if (points[i] != null && points[i + 1] != null) {
-              paint.shader = ui.Gradient.linear(
-                points[i]!,
-                points[i + 1]!,
-                [secondaryColor.withOpacity(finalOpacity * 0.4), color.withOpacity(finalOpacity * 0.6)],
-              );
-              canvas.drawLine(points[i]!, points[i + 1]!, paint);
-            }
-          }
-        }
-        break;
+
       default:
         canvas.drawPath(path, paint);
     }
@@ -159,13 +217,14 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   List<PaintOp> operations = [];
   Color selectedColor = const Color(0xFFE94E77);
   Color secondaryColor = const Color(0xFFF6AD55);
-  DrawingTool activeTool = DrawingTool.kursun;
-  DrawingTool _lastPencilTool = DrawingTool.kursun;
-  DrawingTool _lastBrushTool = DrawingTool.firca_classic;
-  double brushWidth = 12.0;
+  DrawingTool activeTool = DrawingTool.pencil_hb;
+  DrawingTool _lastPencilTool = DrawingTool.pencil_hb;
+  DrawingTool _lastBrushTool = DrawingTool.sulu_firca;
+  double brushWidth = 20.0;
   bool showSubToolMenu = false;
   String? currentMenuType;
 
+  final GlobalKey _repaintBoundaryKey = GlobalKey();
   final TransformationController _transformationController = TransformationController();
   int _pointerCount = 0;
 
@@ -175,21 +234,27 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   ui.Image? _cachedDrawing;
   int _lastCachedCount = 0;
 
+  InterstitialAd? _interstitialAd;
+  Timer? _adTimer;
+  final String _adUnitId = 'ca-app-pub-3940256099942544/1033173712';
+  bool _isAdLoading = false;
+  bool _isAdFree = false;
+
   final List<Color> palette = [
-    const Color(0xFF2D2D2D), const Color(0xFFE94E77), const Color(0xFFFF6B6B),
-    const Color(0xFFF6AD55), const Color(0xFFFFD166), const Color(0xFF06D6A0),
-    const Color(0xFF118AB2), const Color(0xFF073B4C), const Color(0xFF9B59B6),
-    const Color(0xFFED4C67), const Color(0xFFA3CB38), const Color(0xFFC23616),
-    const Color(0xFF000000), const Color(0xFFFFFFFF), const Color(0xFF808080),
-    const Color(0xFFFF0000), const Color(0xFF00FF00), const Color(0xFF0000FF),
-    const Color(0xFFFFFF00), const Color(0xFF00FFFF), const Color(0xFFFF00FF),
-    const Color(0xFFFFA500), const Color(0xFF800080), const Color(0xFF008000),
-    const Color(0xFF800000), const Color(0xFF000080), const Color(0xFF808000),
-    const Color(0xFF008080), const Color(0xFFC0C0C0), const Color(0xFFFFC0CB),
-    const Color(0xFFF0E68C), const Color(0xFFE6E6FA), const Color(0xFFFFF0F5),
-    const Color(0xFFFAF0E6), const Color(0xFF7B68EE), const Color(0xFF48D1CC),
-    const Color(0xFFB0C4DE), const Color(0xFF20B2AA), const Color(0xFF778899),
-    const Color(0xFFBC8F8F), const Color(0xFF4682B4), const Color(0xFFD2B48C),
+    const Color(0xFF000000), const Color(0xFFFFFFFF), const Color(0xFFFF0000),
+    const Color(0xFF00FF00), const Color(0xFF0000FF), const Color(0xFFFFFF00),
+    const Color(0xFFFFA500), const Color(0xFF800080), const Color(0xFFFFC0CB),
+    const Color(0xFFA52A2A), const Color(0xFF808080), const Color(0xFFADD8E6),
+    const Color(0xFF90EE90), const Color(0xFFE6E6FA), const Color(0xFFFFFFE0),
+    const Color(0xFFF5F5DC), const Color(0xFF800000), const Color(0xFF008000),
+    const Color(0xFF000080), const Color(0xFF808000), const Color(0xFFFF4500),
+    const Color(0xFF2E8B57), const Color(0xFF1E90FF), const Color(0xFFDA70D6),
+    const Color(0xFFB22222), const Color(0xFF00FA9A), const Color(0xFF4169E1),
+    const Color(0xFFFFD700), const Color(0xFFD2691E), const Color(0xFF32CD32),
+    const Color(0xFF00CED1), const Color(0xFFFF1493), const Color(0xFF8B4513),
+    const Color(0xFF7FFF00), const Color(0xFF4682B4), const Color(0xFFEE82EE),
+    const Color(0xFFCD853F), const Color(0xFFADFF2F), const Color(0xFF5F9EA0),
+    const Color(0xFFDB7093),
   ];
 
   @override
@@ -200,13 +265,67 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Future<void> _initCanvas() async {
+    _isAdFree = await MockBillingManager.isAdFree();
+    if (!_isAdFree) {
+      _startAdTimer();
+    }
     await _loadTemplate();
     await _loadProgress();
+  }
+
+  Future<void> _startAdTimer() async {
+    _adTimer?.cancel();
+    _adTimer = Timer.periodic(const Duration(seconds: 180), (timer) async {
+      final adFree = await MockBillingManager.isAdFree();
+      if (adFree) {
+        _isAdFree = true;
+        _adTimer?.cancel();
+        return;
+      }
+      _loadInterstitialAd();
+    });
+  }
+
+  void _loadInterstitialAd() {
+    if (_isAdLoading) return;
+    _isAdLoading = true;
+    InterstitialAd.load(
+      adUnitId: _adUnitId,
+      request: const AdRequest(),
+      adLoadCallback: InterstitialAdLoadCallback(
+        onAdLoaded: (ad) {
+          _interstitialAd = ad;
+          _isAdLoading = false;
+          _showInterstitialAd();
+        },
+        onAdFailedToLoad: (error) {
+          debugPrint('InterstitialAd failed to load: $error');
+          _isAdLoading = false;
+        },
+      ),
+    );
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd == null) return;
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (ad) {
+        ad.dispose();
+        _interstitialAd = null;
+      },
+      onAdFailedToShowFullScreenContent: (ad, error) {
+        ad.dispose();
+        _interstitialAd = null;
+      },
+    );
+    _interstitialAd!.show();
   }
 
   @override
   void dispose() {
     _saveProgress();
+    _adTimer?.cancel();
+    _interstitialAd?.dispose();
     _transformationController.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -303,6 +422,28 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     }
   }
 
+  Future<void> _exportToGallery() async {
+    try {
+      final status = await Permission.storage.request();
+      if (!status.isGranted) return;
+
+      RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      Uint8List pngBytes = byteData!.buffer.asUint8List();
+
+      final result = await ImageGallerySaver.saveImage(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.imageSaved)));
+      }
+    } catch (e) {
+      debugPrint('Error exporting image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.errorSaving)));
+      }
+    }
+  }
+
   Offset _screenToPixel(Offset screenPos, Size size) {
     if (templateImage == null) return screenPos;
     double scaleX = size.width / templateImage!.width;
@@ -317,10 +458,19 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDFBF7),
         elevation: 0,
-        title: const Text('BOYAMA DUNYASI', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D))),
+        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Color(0xFF2D2D2D)), onPressed: () => Navigator.pop(context)),
+        title: Text(L.appTitle, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D), fontSize: 16)),
         actions: [
           IconButton(icon: const Icon(Icons.undo, color: Color(0xFF2D2D2D)), onPressed: _undo),
           IconButton(icon: const Icon(Icons.redo, color: Color(0xFF2D2D2D)), onPressed: _redo),
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: TextButton(
+              onPressed: _exportToGallery,
+              style: TextButton.styleFrom(backgroundColor: const Color(0xFF06D6A0), side: const BorderSide(color: Color(0xFF2D2D2D), width: 2)),
+              child: Text(L.save, style: const TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 10)),
+            ),
+          ),
         ],
         bottom: PreferredSize(preferredSize: const Size.fromHeight(4), child: Container(color: const Color(0xFF2D2D2D), height: 4)),
       ),
@@ -344,29 +494,32 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                       builder: (context, constraints) {
                         final size = constraints.biggest;
                         return GestureDetector(
-                          onPanStart: _pointerCount > 1 ? null : (details) {
+                          onPanStart: (details) {
+                            if (_pointerCount > 1) return;
                             _saveHistory();
                             final pixelPos = _screenToPixel(details.localPosition, size);
                             setState(() {
                               operations.add(PathOp(points: [pixelPos], tool: activeTool, color: selectedColor, strokeWidth: brushWidth));
                             });
                           },
-                          onPanUpdate: _pointerCount > 1 ? null : (details) {
+                          onPanUpdate: (details) {
+                            if (_pointerCount > 1) return;
                             if (operations.isNotEmpty && operations.last is PathOp) {
                               final pixelPos = _screenToPixel(details.localPosition, size);
                               final op = operations.last as PathOp;
-                              if (op.points.isNotEmpty && op.points.last != null && (pixelPos - op.points.last!).distance < 1.0) return;
+                              if (op.points.isNotEmpty && op.points.last != null && (pixelPos - op.points.last!).distance < 0.5) return;
                               setState(() {
                                 op.points.add(pixelPos);
                                 op.invalidate();
                               });
                             }
                           },
-                          onPanEnd: _pointerCount > 1 ? null : (_) {
+                          onPanEnd: (details) {
                             if (operations.isNotEmpty && operations.last is PathOp) (operations.last as PathOp).points.add(null);
                             _updateCache();
                           },
                           child: RepaintBoundary(
+                            key: _repaintBoundaryKey,
                             child: CustomPaint(
                               painter: ColoringPainter(
                                 template: templateImage,
@@ -409,9 +562,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _toolButton(DrawingTool.kursun, Icons.edit, "Kalem", isMenu: true),
-              _toolButton(DrawingTool.firca_classic, Icons.brush, "Firca", isMenu: true),
-              _toolButton(DrawingTool.eraser, Icons.delete_outline, "Silgi"),
+              _toolButton(DrawingTool.pencil_hb, Icons.edit, L.pencil, isMenu: true),
+              _toolButton(DrawingTool.sulu_firca, Icons.brush, L.brush, isMenu: true),
+              _toolButton(DrawingTool.eraser, Icons.delete_outline, L.eraser),
             ],
           ),
           const SizedBox(height: 16),
@@ -431,7 +584,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       ),
       child: Row(
         children: [
-          const Text("BOYUT", style: TextStyle(fontWeight: FontWeight.w900)),
+          Text(L.size, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
           Expanded(
             child: Slider(
               value: brushWidth, min: 2.0, max: 100.0,
@@ -447,48 +600,51 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   Widget _buildSubToolMenu() {
     if (!showSubToolMenu || currentMenuType == null) return const SizedBox.shrink();
-    final subTools = currentMenuType == 'Kalem'
+    final subTools = currentMenuType == L.pencil
         ? [
-            {'tool': DrawingTool.kursun, 'label': 'Kursun'},
-            {'tool': DrawingTool.tukenmez, 'label': 'Tukenmez'},
-            {'tool': DrawingTool.keceli, 'label': 'Keceli'},
-            {'tool': DrawingTool.jel_kalem, 'label': 'Jel'},
-            {'tool': DrawingTool.komur, 'label': 'Komur'},
-            {'tool': DrawingTool.boya_kalemi, 'label': 'Boya'},
+            {'tool': DrawingTool.pencil_hb, 'label': 'HB'},
+            {'tool': DrawingTool.kursun, 'label': L.crayon},
+            {'tool': DrawingTool.pencil_2b, 'label': '2B'},
+            {'tool': DrawingTool.pencil_4b, 'label': '4B'},
+            {'tool': DrawingTool.pencil_6b, 'label': '6B'},
+            {'tool': DrawingTool.pencil_9b, 'label': '9B'},
+            {'tool': DrawingTool.komur, 'label': L.charcoal},
           ]
         : [
-            {'tool': DrawingTool.firca_classic, 'label': 'Klasik'},
-            {'tool': DrawingTool.sulu_firca, 'label': 'Sulu'},
-            {'tool': DrawingTool.sprey, 'label': 'Sprey'},
-            {'tool': DrawingTool.yagli_boya, 'label': 'Yagli'},
-            {'tool': DrawingTool.kuru_firca, 'label': 'Kuru'},
-            {'tool': DrawingTool.gradyan_fircasi, 'label': 'Gradyan'},
+            {'tool': DrawingTool.sulu_firca, 'label': L.watercolor},
+            {'tool': DrawingTool.keceli, 'label': L.marker},
+            {'tool': DrawingTool.firca_classic, 'label': L.classic},
+            {'tool': DrawingTool.boya_kalemi, 'label': L.dryBrush},
           ];
     return Container(
       height: 60, margin: const EdgeInsets.only(bottom: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         itemCount: subTools.length,
         itemBuilder: (context, index) {
           final st = subTools[index];
           final tool = st['tool'] as DrawingTool;
           bool isSelected = activeTool == tool;
-          return GestureDetector(
-            onTap: () => setState(() {
-              activeTool = tool;
-              if (currentMenuType == 'Kalem') _lastPencilTool = tool;
-              else if (currentMenuType == 'Firca') _lastBrushTool = tool;
-            }),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFFFD166) : Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-                boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(30),
+              onTap: () => setState(() {
+                activeTool = tool;
+                if (currentMenuType == L.pencil) _lastPencilTool = tool;
+                else if (currentMenuType == L.brush) _lastBrushTool = tool;
+              }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? const Color(0xFFFFD166) : Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                  boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
+                ),
+                child: Center(child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12))),
               ),
-              child: Center(child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14))),
             ),
           );
         }
@@ -502,22 +658,22 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       onTap: () {
         if (isMenu) {
           if (currentMenuType == label) setState(() => showSubToolMenu = !showSubToolMenu);
-          else setState(() { showSubToolMenu = true; currentMenuType = label; activeTool = (label == "Firca") ? _lastBrushTool : _lastPencilTool; });
+          else setState(() { showSubToolMenu = true; currentMenuType = label; activeTool = (label == L.brush) ? _lastBrushTool : _lastPencilTool; });
         } else { setState(() { activeTool = tool; showSubToolMenu = false; currentMenuType = null; }); }
       },
       child: Column(
         children: [
           Container(
-            width: 60, height: 60,
+            width: 54, height: 54,
             decoration: BoxDecoration(
               color: isSelected ? const Color(0xFFFFD166) : Colors.white,
               border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
               boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
             ),
-            child: Icon(icon, color: const Color(0xFF2D2D2D), size: 30),
+            child: Icon(icon, color: const Color(0xFF2D2D2D), size: 28),
           ),
           const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900)),
+          Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
         ],
       ),
     );
@@ -525,19 +681,20 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   Widget _buildPalette() {
     return SizedBox(
-      height: 50,
+      height: 44,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
         itemCount: palette.length,
         itemBuilder: (context, index) => GestureDetector(
           onTap: () => setState(() { secondaryColor = selectedColor; selectedColor = palette[index]; }),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 6),
-            width: 44, height: 44,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: 36, height: 36,
             decoration: BoxDecoration(
               color: palette[index], shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 5 : 3),
-              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(3, 3))],
+              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 4 : 2),
+              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
             ),
           ),
         ),

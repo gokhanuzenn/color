@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/ad_transition_screen.dart';
+import 'package:color_world/utils/localization.dart';
 
 class ColoringTemplate {
   final String id;
@@ -74,7 +75,7 @@ class ImageSelectionScreen extends StatelessWidget {
               ),
             ),
             child: Text(
-              'Boyamak istediğin resmi seç',
+              L.selectImageToColor,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: const Color(0xFF2D2D2D).withOpacity(0.7),
