@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:color_world/screens/coloring_canvas_screen.dart';
 import 'package:color_world/mock_billing.dart';
+import 'package:color_world/utils/localization.dart';
 
 class AdTransitionScreen extends StatefulWidget {
   final String assetPath;
@@ -137,9 +138,9 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
                       color: Colors.black,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Loading Ad...',
-                      style: TextStyle(
+                    Text(
+                      L.loadingAd,
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
                         color: Colors.black,
@@ -147,7 +148,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _isAdLoaded ? 'Ready!' : 'Preparing the image for coloring!',
+                      _isAdLoaded ? L.ready : L.preparingImage,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,

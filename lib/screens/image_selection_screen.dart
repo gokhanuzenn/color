@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/ad_transition_screen.dart';
+import 'package:color_world/utils/localization.dart';
 
 class ColoringTemplate {
   final String id;
@@ -72,7 +73,7 @@ class ImageSelectionScreen extends StatelessWidget {
               border: Border(bottom: BorderSide(color: Color(0xFF2D2D2D), width: 3)),
             ),
             child: Text(
-              'Select an image to color',
+              L.selectImageToColor,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: const Color(0xFF2D2D2D).withOpacity(0.7),
@@ -110,6 +111,7 @@ class TemplateCard extends StatelessWidget {
   final Color themeColor;
 
   const TemplateCard({
+    super.key,
     required this.template,
     required this.themeColor,
   });
