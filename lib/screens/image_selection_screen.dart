@@ -17,20 +17,19 @@ class ImageSelectionScreen extends StatelessWidget {
   final String categoryId;
   final String categoryTitle;
   final Color themeColor;
+  final int templateCount;
 
   const ImageSelectionScreen({
     super.key,
     required this.categoryId,
     required this.categoryTitle,
     required this.themeColor,
+    required this.templateCount,
   });
 
   List<ColoringTemplate> _getTemplates() {
-    int count = 11;
     String prefix = categoryId;
-    if (categoryId == 'sayilar') count = 10;
-
-    return List.generate(count, (index) {
+    return List.generate(templateCount, (index) {
       final numberStr = (index + 1).toString().padLeft(3, '0');
       return ColoringTemplate(
         id: '${prefix}_$numberStr',
@@ -70,7 +69,9 @@ class ImageSelectionScreen extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Color(0xFF2D2D2D), width: 3)),
+              border: Border(
+                bottom: BorderSide(color: Color(0xFF2D2D2D), width: 3),
+              ),
             ),
             child: Text(
               'Boyamak istediğin resmi seç',
@@ -110,11 +111,7 @@ class TemplateCard extends StatelessWidget {
   final ColoringTemplate template;
   final Color themeColor;
 
-  const TemplateCard({
-    super.key,
-    required this.template,
-    required this.themeColor,
-  });
+  const TemplateCard({required this.template, required this.themeColor});
 
   @override
   Widget build(BuildContext context) {
@@ -123,10 +120,11 @@ class TemplateCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => AdTransitionScreen(
-              assetPath: template.assetPath,
-              templateId: template.id,
-            ),
+            builder:
+                (context) => AdTransitionScreen(
+                  assetPath: template.assetPath,
+                  templateId: template.id,
+                ),
           ),
         );
       },
@@ -163,11 +161,18 @@ class TemplateCard extends StatelessWidget {
                     return Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.image_outlined, color: themeColor.withOpacity(0.5), size: 40),
+                        Icon(
+                          Icons.image_outlined,
+                          color: themeColor.withOpacity(0.5),
+                          size: 40,
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           template.id.split('_').last,
-                          style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D)),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF2D2D2D),
+                          ),
                         ),
                       ],
                     );
@@ -187,7 +192,11 @@ class TemplateCard extends StatelessWidget {
                 ),
                 child: Text(
                   '#${template.id.split('_').last}',
-                  style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D)),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2D2D2D),
+                  ),
                 ),
               ),
             ),

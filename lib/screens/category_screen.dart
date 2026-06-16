@@ -1,34 +1,303 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/image_selection_screen.dart';
+import 'package:color_world/mock_billing.dart';
 
 class ColoringCategory {
   final String id;
-  final String titleTurkish;
+  final String title;
   final int count;
   final Color themeColor;
   final IconData icon;
 
   ColoringCategory({
     required this.id,
-    required this.titleTurkish,
+    required this.title,
     required this.count,
     required this.themeColor,
     required this.icon,
   });
 }
 
-class CategoryScreen extends StatelessWidget {
+class CategoryScreen extends StatefulWidget {
   const CategoryScreen({super.key});
 
+  @override
+  State<CategoryScreen> createState() => _CategoryScreenState();
+}
+
+class _CategoryScreenState extends State<CategoryScreen> {
+  bool _isAdFree = false;
+  final TextEditingController _promoController = TextEditingController();
+  final String _validPromoCode = 'RuzgarveGoktug2026';
+
   static final List<ColoringCategory> categories = [
-    ColoringCategory(id: 'erkek_karakter', titleTurkish: 'Erkek Karakterler', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.face),
-    ColoringCategory(id: 'kiz_karakter', titleTurkish: 'Kız Karakterler', count: 11, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
-    ColoringCategory(id: 'sevimli_dostlar', titleTurkish: 'Sevimli Dostlar', count: 11, themeColor: const Color(0xFFFFD1DC), icon: Icons.pets),
-    ColoringCategory(id: 'tasitlar', titleTurkish: 'Taşıtlar', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
-    ColoringCategory(id: 'sayilar', titleTurkish: 'Sayılar', count: 10, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
-    ColoringCategory(id: 'meyveler', titleTurkish: 'Meyveler & Yiyecekler', count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
-    ColoringCategory(id: 'vahsi_dostlar', titleTurkish: 'Vahşi Dostlar', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(
+        id: 'boy_characters',
+        title: 'Boy Characters',
+        count: 11,
+        themeColor: const Color(0xFF6DA9E4),
+        icon: Icons.face),
+    ColoringCategory(
+        id: 'girl_characters',
+        title: 'Girl Characters',
+        count: 11,
+        themeColor: const Color(0xFFE6A8D7),
+        icon: Icons.face_retouching_natural),
+    ColoringCategory(
+        id: 'cute_friends',
+        title: 'Cute Friends',
+        count: 11,
+        themeColor: const Color(0xFFFFD1DC),
+        icon: Icons.pets),
+    ColoringCategory(
+        id: 'vehicles',
+        title: 'Vehicles',
+        count: 11,
+        themeColor: const Color(0xFFB39EB5),
+        icon: Icons.directions_car),
+    ColoringCategory(
+        id: 'numbers',
+        title: 'Numbers',
+        count: 9,
+        themeColor: const Color(0xFFFFB347),
+        icon: Icons.pin),
+    ColoringCategory(
+        id: 'fruits',
+        title: 'Fruits & Food',
+        count: 11,
+        themeColor: const Color(0xFF98FB98),
+        icon: Icons.restaurant),
+    ColoringCategory(
+        id: 'wild_friends',
+        title: 'Wild Friends',
+        count: 11,
+        themeColor: const Color(0xFFAEC6CF),
+        icon: Icons.nature),
+    ColoringCategory(
+        id: 'space',
+        title: 'Space Adventures',
+        count: 1,
+        themeColor: const Color(0xFF3F51B5),
+        icon: Icons.rocket_launch),
+    ColoringCategory(
+        id: 'dinosaurs',
+        title: 'Dinosaur World',
+        count: 1,
+        themeColor: const Color(0xFF4CAF50),
+        icon: Icons.pets),
+    ColoringCategory(
+        id: 'princess',
+        title: 'Princesses & Castles',
+        count: 1,
+        themeColor: const Color(0xFFE91E63),
+        icon: Icons.auto_awesome),
+    ColoringCategory(
+        id: 'ocean',
+        title: 'Under the Ocean',
+        count: 12,
+        themeColor: const Color(0xFF03A9F4),
+        icon: Icons.water),
+    ColoringCategory(
+        id: 'fairytale',
+        title: 'Fairytale World',
+        count: 1,
+        themeColor: const Color(0xFF9C27B0),
+        icon: Icons.fort),
+    ColoringCategory(
+        id: 'robots',
+        title: 'Super Robots',
+        count: 1,
+        themeColor: const Color(0xFF607D8B),
+        icon: Icons.smart_toy),
+    ColoringCategory(
+        id: 'nature',
+        title: 'Nature & Flowers',
+        count: 11,
+        themeColor: const Color(0xFF8BC34A),
+        icon: Icons.local_florist),
+    ColoringCategory(
+        id: 'monsters',
+        title: 'Cute Monsters',
+        count: 1,
+        themeColor: const Color(0xFFFF9800),
+        icon: Icons.mood),
+    ColoringCategory(
+        id: 'heroes',
+        title: 'Super Heroes',
+        count: 1,
+        themeColor: const Color(0xFFE53935),
+        icon: Icons.shield),
+    ColoringCategory(
+        id: 'farm',
+        title: 'Cute Farm',
+        count: 1,
+        themeColor: const Color(0xFF8D6E63),
+        icon: Icons.agriculture),
+    ColoringCategory(
+        id: 'jobs',
+        title: 'Fun Jobs',
+        count: 1,
+        themeColor: const Color(0xFF00ACC1),
+        icon: Icons.work),
+    ColoringCategory(
+        id: 'letters',
+        title: 'Letter World',
+        count: 1,
+        themeColor: const Color(0xFFFFD54F),
+        icon: Icons.font_download),
+    ColoringCategory(
+        id: 'toys',
+        title: 'Toy World',
+        count: 1,
+        themeColor: const Color(0xFF26A69A),
+        icon: Icons.toys),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAdFreeStatus();
+  }
+
+  @override
+  void dispose() {
+    _promoController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkAdFreeStatus() async {
+    final status = await MockBillingManager.isAdFree();
+    setState(() => _isAdFree = status);
+  }
+
+  Future<void> _handlePurchase() async {
+    await MockBillingManager.purchaseAdFree();
+    await _checkAdFreeStatus();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ads removed! Thank you.')),
+      );
+    }
+  }
+
+  void _showPromoDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFDFBF7),
+              border: Border.all(color: const Color(0xFF2D2D2D), width: 4),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF2D2D2D),
+                  offset: Offset(8, 8),
+                  blurRadius: 0,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'PROMO CODE',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2D2D2D),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: _promoController,
+                  decoration: InputDecoration(
+                    hintText: 'Enter code here...',
+                    fillColor: Colors.white,
+                    filled: true,
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Color(0xFF2D2D2D), width: 3),
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          const BorderSide(color: Color(0xFF2D2D2D), width: 3),
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                  ),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                                color: const Color(0xFF2D2D2D), width: 3),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'CANCEL',
+                              style: TextStyle(fontWeight: FontWeight.w900),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async {
+                          if (_promoController.text.trim() == _validPromoCode) {
+                            await MockBillingManager.purchaseAdFree();
+                            await _checkAdFreeStatus();
+                            if (mounted) {
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        'Congratulations! Code accepted.')),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Invalid code!')),
+                            );
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF06D6A0),
+                            border: Border.all(
+                                color: const Color(0xFF2D2D2D), width: 3),
+                          ),
+                          child: const Center(
+                            child: Text(
+                              'CONFIRM',
+                              style: TextStyle(fontWeight: FontWeight.w900),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +308,7 @@ class CategoryScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'BOYAMA DÜNYASI',
+          'COLORING WORLD',
           style: TextStyle(
             color: Color(0xFF2D2D2D),
             fontWeight: FontWeight.w900,
@@ -47,13 +316,53 @@ class CategoryScreen extends StatelessWidget {
             fontSize: 22,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.confirmation_number_outlined,
+                color: Color(0xFF2D2D2D)),
+            onPressed: _showPromoDialog,
+          ),
+        ],
       ),
       body: Column(
         children: [
+          if (!_isAdFree)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                onTap: _handlePurchase,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700),
+                    border:
+                        Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0xFF2D2D2D),
+                        offset: Offset(4, 4),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'REMOVE ADS (\$2.99)',
+                      style: TextStyle(
+                        color: Color(0xFF2D2D2D),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
-              'Kategori Seçin',
+              'Select a Category',
               style: TextStyle(
                 color: Color(0xFF2D2D2D),
                 fontSize: 16,
@@ -96,8 +405,9 @@ class CategoryCard extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => ImageSelectionScreen(
               categoryId: category.id,
-              categoryTitle: category.titleTurkish,
+              categoryTitle: category.title,
               themeColor: category.themeColor,
+              templateCount: category.count,
             ),
           ),
         );
@@ -142,7 +452,7 @@ class CategoryCard extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      category.titleTurkish.toUpperCase(),
+                      category.title.toUpperCase(),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Color(0xFF2D2D2D),
@@ -152,7 +462,7 @@ class CategoryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${category.count} GÖRSEL',
+                      '${category.count} IMAGES',
                       style: const TextStyle(
                         color: Color(0xFF2D2D2D),
                         fontWeight: FontWeight.bold,
