@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/image_selection_screen.dart';
 import 'package:color_world/mock_billing.dart';
-<<<<<<< HEAD
-
-class ColoringCategory {
-  final String id;
-  final String title;
-=======
 import 'package:color_world/utils/localization.dart';
 
 class ColoringCategory {
   final String id;
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
   final int count;
   final Color themeColor;
   final IconData icon;
@@ -20,10 +13,6 @@ class ColoringCategory {
 
   ColoringCategory({
     required this.id,
-<<<<<<< HEAD
-    required this.title,
-=======
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
     required this.count,
     required this.themeColor,
     required this.icon,
@@ -43,148 +32,26 @@ class _CategoryScreenState extends State<CategoryScreen> {
   final String _validPromoCode = 'RuzgarveGoktug2026';
 
   static final List<ColoringCategory> categories = [
-<<<<<<< HEAD
-    ColoringCategory(
-        id: 'boy_characters',
-        title: 'Boy Characters',
-        count: 11,
-        themeColor: const Color(0xFF6DA9E4),
-        icon: Icons.face),
-    ColoringCategory(
-        id: 'girl_characters',
-        title: 'Girl Characters',
-        count: 11,
-        themeColor: const Color(0xFFE6A8D7),
-        icon: Icons.face_retouching_natural),
-    ColoringCategory(
-        id: 'cute_friends',
-        title: 'Cute Friends',
-        count: 11,
-        themeColor: const Color(0xFFFFD1DC),
-        icon: Icons.pets),
-    ColoringCategory(
-        id: 'vehicles',
-        title: 'Vehicles',
-        count: 11,
-        themeColor: const Color(0xFFB39EB5),
-        icon: Icons.directions_car),
-    ColoringCategory(
-        id: 'numbers',
-        title: 'Numbers',
-        count: 9,
-        themeColor: const Color(0xFFFFB347),
-        icon: Icons.pin),
-    ColoringCategory(
-        id: 'fruits',
-        title: 'Fruits & Food',
-        count: 11,
-        themeColor: const Color(0xFF98FB98),
-        icon: Icons.restaurant),
-    ColoringCategory(
-        id: 'wild_friends',
-        title: 'Wild Friends',
-        count: 11,
-        themeColor: const Color(0xFFAEC6CF),
-        icon: Icons.nature),
-    ColoringCategory(
-        id: 'space',
-        title: 'Space Adventures',
-        count: 1,
-        themeColor: const Color(0xFF3F51B5),
-        icon: Icons.rocket_launch),
-    ColoringCategory(
-        id: 'dinosaurs',
-        title: 'Dinosaur World',
-        count: 1,
-        themeColor: const Color(0xFF4CAF50),
-        icon: Icons.pets),
-    ColoringCategory(
-        id: 'princess',
-        title: 'Princesses & Castles',
-        count: 1,
-        themeColor: const Color(0xFFE91E63),
-        icon: Icons.auto_awesome),
-    ColoringCategory(
-        id: 'ocean',
-        title: 'Under the Ocean',
-        count: 12,
-        themeColor: const Color(0xFF03A9F4),
-        icon: Icons.water),
-    ColoringCategory(
-        id: 'fairytale',
-        title: 'Fairytale World',
-        count: 1,
-        themeColor: const Color(0xFF9C27B0),
-        icon: Icons.fort),
-    ColoringCategory(
-        id: 'robots',
-        title: 'Super Robots',
-        count: 1,
-        themeColor: const Color(0xFF607D8B),
-        icon: Icons.smart_toy),
-    ColoringCategory(
-        id: 'nature',
-        title: 'Nature & Flowers',
-        count: 11,
-        themeColor: const Color(0xFF8BC34A),
-        icon: Icons.local_florist),
-    ColoringCategory(
-        id: 'monsters',
-        title: 'Cute Monsters',
-        count: 1,
-        themeColor: const Color(0xFFFF9800),
-        icon: Icons.mood),
-    ColoringCategory(
-        id: 'heroes',
-        title: 'Super Heroes',
-        count: 1,
-        themeColor: const Color(0xFFE53935),
-        icon: Icons.shield),
-    ColoringCategory(
-        id: 'farm',
-        title: 'Cute Farm',
-        count: 1,
-        themeColor: const Color(0xFF8D6E63),
-        icon: Icons.agriculture),
-    ColoringCategory(
-        id: 'jobs',
-        title: 'Fun Jobs',
-        count: 1,
-        themeColor: const Color(0xFF00ACC1),
-        icon: Icons.work),
-    ColoringCategory(
-        id: 'letters',
-        title: 'Letter World',
-        count: 1,
-        themeColor: const Color(0xFFFFD54F),
-        icon: Icons.font_download),
-    ColoringCategory(
-        id: 'toys',
-        title: 'Toy World',
-        count: 1,
-        themeColor: const Color(0xFF26A69A),
-        icon: Icons.toys),
-=======
-    ColoringCategory(id: 'animal', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
-    ColoringCategory(id: 'girl', count: 11, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
-    ColoringCategory(id: 'car', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
-    ColoringCategory(id: 'number', count: 9, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
-    ColoringCategory(id: 'food', count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
-    ColoringCategory(id: 'nature', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
-    ColoringCategory(id: 'space', count: 1, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
-    ColoringCategory(id: 'dino', count: 1, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
-    ColoringCategory(id: 'magic', count: 1, themeColor: const Color(0xFFE91E63), icon: Icons.auto_awesome),
-    ColoringCategory(id: 'sea', count: 12, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
-    ColoringCategory(id: 'fairy', count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
-    ColoringCategory(id: 'robot', count: 1, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
-    ColoringCategory(id: 'flower', count: 11, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
-    ColoringCategory(id: 'emoji', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
-    ColoringCategory(id: 'hero', count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
-    ColoringCategory(id: 'farm', count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
-    ColoringCategory(id: 'job', count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
-    ColoringCategory(id: 'letter', count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
-    ColoringCategory(id: 'toy', count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
+    ColoringCategory(id: animal, count: 20, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
+    ColoringCategory(id: girl, count: 20, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
+    ColoringCategory(id: car, count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
+    ColoringCategory(id: number, count: 9, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
+    ColoringCategory(id: food, count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
+    ColoringCategory(id: nature, count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(id: space, count: 1, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
+    ColoringCategory(id: dino, count: 1, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
+    ColoringCategory(id: magic, count: 1, themeColor: const Color(0xFFE91E63), icon: Icons.auto_awesome),
+    ColoringCategory(id: sea, count: 12, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
+    ColoringCategory(id: fairy, count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: robot, count: 2, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
+    ColoringCategory(id: flower, count: 11, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
+    ColoringCategory(id: emoji, count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
+    ColoringCategory(id: hero, count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: farm, count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: job, count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: letter, count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: toy, count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
+    ColoringCategory(id: construction, count: 1, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
   ];
 
   @override
@@ -209,11 +76,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     await _checkAdFreeStatus();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
-        const SnackBar(content: Text('Ads removed! Thank you.')),
-=======
         SnackBar(content: Text(L.adsRemoved)),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
       );
     }
   }
@@ -240,15 +103,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-<<<<<<< HEAD
-                const Text(
-                  'PROMO CODE',
-                  style: TextStyle(
-=======
                 Text(
                   L.promoCode,
                   style: const TextStyle(
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: Color(0xFF2D2D2D),
@@ -258,19 +115,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 TextField(
                   controller: _promoController,
                   decoration: InputDecoration(
-<<<<<<< HEAD
-                    hintText: 'Enter code here...',
-                    fillColor: Colors.white,
-                    filled: true,
-                    enabledBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D), width: 3),
-                      borderRadius: BorderRadius.circular(0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide:
-                          const BorderSide(color: Color(0xFF2D2D2D), width: 3),
-=======
                     hintText: L.enterCode,
                     fillColor: Colors.white,
                     filled: true,
@@ -280,7 +124,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: const BorderSide(color: Color(0xFF2D2D2D), width: 3),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                       borderRadius: BorderRadius.circular(0),
                     ),
                   ),
@@ -296,22 +139,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             color: Colors.white,
-<<<<<<< HEAD
-                            border: Border.all(
-                                color: const Color(0xFF2D2D2D), width: 3),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'CANCEL',
-                              style: TextStyle(fontWeight: FontWeight.w900),
-=======
                             border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
                           ),
                           child: Center(
                             child: Text(
                               L.cancel,
                               style: const TextStyle(fontWeight: FontWeight.w900),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                             ),
                           ),
                         ),
@@ -321,32 +154,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () async {
-<<<<<<< HEAD
-                          if (_promoController.text.trim() == _validPromoCode) {
-=======
                           if (_promoController.text.trim().toUpperCase() == _validPromoCode.toUpperCase()) {
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                             await MockBillingManager.purchaseAdFree();
                             await _checkAdFreeStatus();
                             if (mounted) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
-                                const SnackBar(
-                                    content: Text(
-                                        'Congratulations! Code accepted.')),
-=======
                                 SnackBar(content: Text(L.codeAccepted)),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                               );
                             }
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-<<<<<<< HEAD
-                              const SnackBar(content: Text('Invalid code!')),
-=======
                               SnackBar(content: Text(L.invalidCode)),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                             );
                           }
                         },
@@ -354,22 +173,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
                             color: const Color(0xFF06D6A0),
-<<<<<<< HEAD
-                            border: Border.all(
-                                color: const Color(0xFF2D2D2D), width: 3),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              'CONFIRM',
-                              style: TextStyle(fontWeight: FontWeight.w900),
-=======
                             border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
                           ),
                           child: Center(
                             child: Text(
                               L.confirm,
                               style: const TextStyle(fontWeight: FontWeight.w900),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                             ),
                           ),
                         ),
@@ -393,15 +202,9 @@ class _CategoryScreenState extends State<CategoryScreen> {
         backgroundColor: const Color(0xFFFDFBF7),
         elevation: 0,
         centerTitle: true,
-<<<<<<< HEAD
-        title: const Text(
-          'COLORING WORLD',
-          style: TextStyle(
-=======
         title: Text(
           L.appTitle,
           style: const TextStyle(
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
             color: Color(0xFF2D2D2D),
             fontWeight: FontWeight.w900,
             letterSpacing: 2.0,
@@ -410,12 +213,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         ),
         actions: [
           IconButton(
-<<<<<<< HEAD
-            icon: const Icon(Icons.confirmation_number_outlined,
-                color: Color(0xFF2D2D2D)),
-=======
             icon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF2D2D2D)),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
             onPressed: _showPromoDialog,
           ),
         ],
@@ -432,12 +230,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700),
-<<<<<<< HEAD
-                    border:
-                        Border.all(color: const Color(0xFF2D2D2D), width: 3),
-=======
                     border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                     boxShadow: const [
                       BoxShadow(
                         color: Color(0xFF2D2D2D),
@@ -446,17 +239,10 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       ),
                     ],
                   ),
-<<<<<<< HEAD
-                  child: const Center(
-                    child: Text(
-                      'REMOVE ADS (\$2.99)',
-                      style: TextStyle(
-=======
                   child: Center(
                     child: Text(
                       L.removeAds,
                       style: const TextStyle(
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                         color: Color(0xFF2D2D2D),
                         fontWeight: FontWeight.w900,
                         fontSize: 16,
@@ -466,19 +252,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 ),
               ),
             ),
-<<<<<<< HEAD
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              'Select a Category',
-              style: TextStyle(
-=======
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
               L.selectCategory,
               style: const TextStyle(
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                 color: Color(0xFF2D2D2D),
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -577,11 +355,7 @@ class CategoryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-<<<<<<< HEAD
-                      '${category.count} IMAGES',
-=======
                       '${category.count} ${L.imagesCount}',
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
                       style: const TextStyle(
                         color: Color(0xFF2D2D2D),
                         fontWeight: FontWeight.bold,
