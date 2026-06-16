@@ -433,12 +433,12 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
       final result = await ImageGallerySaver.saveImage(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('RESİM GALERİYE KAYDEDİLDİ!')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('IMAGE SAVED TO GALLERY!')));
       }
     } catch (e) {
       debugPrint('Error exporting image: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('KAYDEDİLİRKEN HATA OLUŞTU.')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('ERROR SAVING IMAGE.')));
       }
     }
   }
@@ -458,7 +458,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         backgroundColor: const Color(0xFFFDFBF7),
         elevation: 0,
         leading: IconButton(icon: const Icon(Icons.arrow_back, color: Color(0xFF2D2D2D)), onPressed: () => Navigator.pop(context)),
-        title: const Text('BOYAMA DUNYASI', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D), fontSize: 16)),
+        title: const Text('COLOR WORLD', style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D), fontSize: 16)),
         actions: [
           IconButton(icon: const Icon(Icons.undo, color: Color(0xFF2D2D2D)), onPressed: _undo),
           IconButton(icon: const Icon(Icons.redo, color: Color(0xFF2D2D2D)), onPressed: _redo),
@@ -467,7 +467,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
             child: TextButton(
               onPressed: _exportToGallery,
               style: TextButton.styleFrom(backgroundColor: const Color(0xFF06D6A0), side: const BorderSide(color: Color(0xFF2D2D2D), width: 2)),
-              child: const Text('KAYDET', style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 10)),
+              child: const Text('SAVE', style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 10)),
             ),
           ),
         ],
@@ -561,9 +561,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _toolButton(DrawingTool.pencil_hb, Icons.edit, "Kalem", isMenu: true),
-              _toolButton(DrawingTool.sulu_firca, Icons.brush, "Firca", isMenu: true),
-              _toolButton(DrawingTool.eraser, Icons.delete_outline, "Silgi"),
+              _toolButton(DrawingTool.pencil_hb, Icons.edit, "Pencil", isMenu: true),
+              _toolButton(DrawingTool.sulu_firca, Icons.brush, "Brush", isMenu: true),
+              _toolButton(DrawingTool.eraser, Icons.delete_outline, "Eraser"),
             ],
           ),
           const SizedBox(height: 16),
@@ -583,7 +583,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       ),
       child: Row(
         children: [
-          const Text("BOYUT", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
+          const Text("SIZE", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
           Expanded(
             child: Slider(
               value: brushWidth, min: 2.0, max: 100.0,
@@ -599,21 +599,21 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   Widget _buildSubToolMenu() {
     if (!showSubToolMenu || currentMenuType == null) return const SizedBox.shrink();
-    final subTools = currentMenuType == 'Kalem'
+    final subTools = currentMenuType == 'Pencil'
         ? [
             {'tool': DrawingTool.pencil_hb, 'label': 'HB'},
-            {'tool': DrawingTool.kursun, 'label': 'Kurşun'},
+            {'tool': DrawingTool.kursun, 'label': 'Crayon'},
             {'tool': DrawingTool.pencil_2b, 'label': '2B'},
             {'tool': DrawingTool.pencil_4b, 'label': '4B'},
             {'tool': DrawingTool.pencil_6b, 'label': '6B'},
             {'tool': DrawingTool.pencil_9b, 'label': '9B'},
-            {'tool': DrawingTool.komur, 'label': 'Kömür'},
+            {'tool': DrawingTool.komur, 'label': 'Charcoal'},
           ]
         : [
-            {'tool': DrawingTool.sulu_firca, 'label': 'Sulu'},
-            {'tool': DrawingTool.keceli, 'label': 'Keçeli'},
-            {'tool': DrawingTool.firca_classic, 'label': 'Klasik'},
-            {'tool': DrawingTool.boya_kalemi, 'label': 'Kuru'},
+            {'tool': DrawingTool.sulu_firca, 'label': 'Watercolor'},
+            {'tool': DrawingTool.keceli, 'label': 'Marker'},
+            {'tool': DrawingTool.firca_classic, 'label': 'Classic'},
+            {'tool': DrawingTool.boya_kalemi, 'label': 'Dry Brush'},
           ];
     return Container(
       height: 60, margin: const EdgeInsets.only(bottom: 8),
@@ -631,8 +631,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
               borderRadius: BorderRadius.circular(30),
               onTap: () => setState(() {
                 activeTool = tool;
-                if (currentMenuType == 'Kalem') _lastPencilTool = tool;
-                else if (currentMenuType == 'Firca') _lastBrushTool = tool;
+                if (currentMenuType == 'Pencil') _lastPencilTool = tool;
+                else if (currentMenuType == 'Brush') _lastBrushTool = tool;
               }),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -657,7 +657,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       onTap: () {
         if (isMenu) {
           if (currentMenuType == label) setState(() => showSubToolMenu = !showSubToolMenu);
-          else setState(() { showSubToolMenu = true; currentMenuType = label; activeTool = (label == "Firca") ? _lastBrushTool : _lastPencilTool; });
+          else setState(() { showSubToolMenu = true; currentMenuType = label; activeTool = (label == "Brush") ? _lastBrushTool : _lastPencilTool; });
         } else { setState(() { activeTool = tool; showSubToolMenu = false; currentMenuType = null; }); }
       },
       child: Column(

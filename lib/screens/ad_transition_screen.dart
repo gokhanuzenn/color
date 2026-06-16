@@ -138,7 +138,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
                     ),
                     const SizedBox(height: 16),
                     const Text(
-                      'Reklam Yükleniyor...',
+                      'Loading Ad...',
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w900,
@@ -147,7 +147,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      _isAdLoaded ? 'Hazır!' : 'Resim boyanmaya hazırlanıyor!',
+                      _isAdLoaded ? 'Ready!' : 'Preparing the image for coloring!',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,

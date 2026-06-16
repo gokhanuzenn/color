@@ -4,14 +4,14 @@ import 'package:color_world/mock_billing.dart';
 
 class ColoringCategory {
   final String id;
-  final String titleTurkish;
+  final String title;
   final int count;
   final Color themeColor;
   final IconData icon;
 
   ColoringCategory({
     required this.id,
-    required this.titleTurkish,
+    required this.title,
     required this.count,
     required this.themeColor,
     required this.icon,
@@ -31,25 +31,25 @@ class _CategoryScreenState extends State<CategoryScreen> {
   final String _validPromoCode = 'RuzgarveGoktug2026';
 
   static final List<ColoringCategory> categories = [
-    ColoringCategory(id: 'animal', titleTurkish: 'Hayvanlar', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
-    ColoringCategory(id: 'girl', titleTurkish: 'Kız Karakter', count: 11, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
-    ColoringCategory(id: 'car', titleTurkish: 'Taşıtlar', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
-    ColoringCategory(id: 'number', titleTurkish: 'Sayılar', count: 9, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
-    ColoringCategory(id: 'food', titleTurkish: 'Yiyecekler', count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
-    ColoringCategory(id: 'nature', titleTurkish: 'Doğa', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
-    ColoringCategory(id: 'space', titleTurkish: 'Uzay Maceraları', count: 1, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
-    ColoringCategory(id: 'dino', titleTurkish: 'Dinozor Dünyası', count: 1, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
-    ColoringCategory(id: 'magic', titleTurkish: 'Sihirli Dünya', count: 1, themeColor: const Color(0xFFE91E63), icon: Icons.auto_awesome),
-    ColoringCategory(id: 'sea', titleTurkish: 'Deniz Altı', count: 12, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
-    ColoringCategory(id: 'fairy', titleTurkish: 'Masal Dünyası', count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
-    ColoringCategory(id: 'robot', titleTurkish: 'Robotlar', count: 1, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
-    ColoringCategory(id: 'flower', titleTurkish: 'Çiçekler', count: 11, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
-    ColoringCategory(id: 'emoji', titleTurkish: 'Emojiler', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
-    ColoringCategory(id: 'hero', titleTurkish: 'Kahramanlar', count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
-    ColoringCategory(id: 'farm', titleTurkish: 'Çiftlik', count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
-    ColoringCategory(id: 'job', titleTurkish: 'Meslekler', count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
-    ColoringCategory(id: 'letter', titleTurkish: 'Harfler Dünyası', count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
-    ColoringCategory(id: 'toy', titleTurkish: 'Oyuncak Dünyası', count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
+    ColoringCategory(id: 'animal', title: 'Animals', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
+    ColoringCategory(id: 'girl', title: 'Girl Character', count: 11, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
+    ColoringCategory(id: 'car', title: 'Vehicles', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
+    ColoringCategory(id: 'number', title: 'Numbers', count: 9, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
+    ColoringCategory(id: 'food', title: 'Food', count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
+    ColoringCategory(id: 'nature', title: 'Nature', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(id: 'space', title: 'Space Adventures', count: 1, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
+    ColoringCategory(id: 'dino', title: 'Dinosaur World', count: 1, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
+    ColoringCategory(id: 'magic', title: 'Magic World', count: 1, themeColor: const Color(0xFFE91E63), icon: Icons.auto_awesome),
+    ColoringCategory(id: 'sea', title: 'Under the Sea', count: 12, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
+    ColoringCategory(id: 'fairy', title: 'Fairy Tale World', count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: 'robot', title: 'Robots', count: 1, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
+    ColoringCategory(id: 'flower', title: 'Flowers', count: 11, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
+    ColoringCategory(id: 'emoji', title: 'Emojis', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
+    ColoringCategory(id: 'hero', title: 'Heroes', count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: 'farm', title: 'Farm', count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: 'job', title: 'Jobs', count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: 'letter', title: 'World of Letters', count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: 'toy', title: 'Toy World', count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
   ];
 
   @override
@@ -74,7 +74,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     await _checkAdFreeStatus();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Reklamlar kaldırıldı! Teşekkürler.')),
+        const SnackBar(content: Text('Ads removed! Thank you.')),
       );
     }
   }
@@ -102,7 +102,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'PROMOSYON KODU',
+                  'PROMO CODE',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
@@ -113,7 +113,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 TextField(
                   controller: _promoController,
                   decoration: InputDecoration(
-                    hintText: 'Kodu buraya yazın...',
+                    hintText: 'Enter code here...',
                     fillColor: Colors.white,
                     filled: true,
                     enabledBorder: OutlineInputBorder(
@@ -141,7 +141,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           ),
                           child: const Center(
                             child: Text(
-                              'İPTAL',
+                              'CANCEL',
                               style: TextStyle(fontWeight: FontWeight.w900),
                             ),
                           ),
@@ -158,12 +158,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
                             if (mounted) {
                               Navigator.pop(context);
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Tebrikler! Kod kabul edildi.')),
+                                const SnackBar(content: Text('Congratulations! Code accepted.')),
                               );
                             }
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Geçersiz kod!')),
+                              const SnackBar(content: Text('Invalid code!')),
                             );
                           }
                         },
@@ -175,7 +175,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           ),
                           child: const Center(
                             child: Text(
-                              'ONAYLA',
+                              'CONFIRM',
                               style: TextStyle(fontWeight: FontWeight.w900),
                             ),
                           ),
@@ -201,7 +201,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'BOYAMA DÜNYASI',
+          'COLOR WORLD',
           style: TextStyle(
             color: Color(0xFF2D2D2D),
             fontWeight: FontWeight.w900,
@@ -239,7 +239,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                   ),
                   child: const Center(
                     child: Text(
-                      'REKLAMLARI KALDIR (\$2.99)',
+                      'REMOVE ADS ($2.99)',
                       style: TextStyle(
                         color: Color(0xFF2D2D2D),
                         fontWeight: FontWeight.w900,
@@ -253,7 +253,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
-              'Kategori Seçin',
+              'Select Category',
               style: TextStyle(
                 color: Color(0xFF2D2D2D),
                 fontSize: 16,
@@ -296,7 +296,7 @@ class CategoryCard extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => ImageSelectionScreen(
               categoryId: category.id,
-              categoryTitle: category.titleTurkish,
+              categoryTitle: category.title,
               themeColor: category.themeColor,
               templateCount: category.count,
             ),
@@ -343,7 +343,7 @@ class CategoryCard extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      category.titleTurkish.toUpperCase(),
+                      category.title.toUpperCase(),
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Color(0xFF2D2D2D),
@@ -353,7 +353,7 @@ class CategoryCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${category.count} GÖRSEL',
+                      '${category.count} IMAGES',
                       style: const TextStyle(
                         color: Color(0xFF2D2D2D),
                         fontWeight: FontWeight.bold,

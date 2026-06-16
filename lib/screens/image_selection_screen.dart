@@ -72,7 +72,7 @@ class ImageSelectionScreen extends StatelessWidget {
               border: Border(bottom: BorderSide(color: Color(0xFF2D2D2D), width: 3)),
             ),
             child: Text(
-              'Boyamak istediğin resmi seç',
+              'Select an image to color',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: const Color(0xFF2D2D2D).withOpacity(0.7),
