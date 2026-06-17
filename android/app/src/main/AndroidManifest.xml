@@ -10,7 +10,7 @@
             android:value="ca-app-pub-9171283684710932"/>
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.gokhanuzenn.color_world.MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
@@ -21,9 +21,6 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
-            <meta-data
-                android:name="io.flutter.embedding.android.FlutterEmbeddingVersion"
-                android:value="2" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
