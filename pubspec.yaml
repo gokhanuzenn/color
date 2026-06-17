@@ -10,13 +10,9 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-<<<<<<< HEAD
   path_provider: ^2.1.3
-  shared_preferences: ^2.5.3
-=======
-  google_mobile_ads: ^5.1.0
   shared_preferences: ^2.2.0
->>>>>>> 66368d638fa4301d088748b02168261eca1c903d
+  google_mobile_ads: ^5.1.0
 
 dev_dependencies:
   flutter_test:
