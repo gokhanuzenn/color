@@ -44,14 +44,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
     ColoringCategory(id: 'sea', count: 12, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
     ColoringCategory(id: 'fairy', count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
     ColoringCategory(id: 'robot', count: 2, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
-    ColoringCategory(id: flower, count: 11, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
-    ColoringCategory(id: emoji, count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
-    ColoringCategory(id: hero, count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
-    ColoringCategory(id: farm, count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
-    ColoringCategory(id: job, count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
-    ColoringCategory(id: letter, count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
-    ColoringCategory(id: 'toy', count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
-    ColoringCategory(id: construction, count: 1, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
+    ColoringCategory(id: 'flower', count: 11, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
+    ColoringCategory(id: 'emoji', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
+    ColoringCategory(id: 'hero', count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: 'farm', count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: 'job', count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: 'letter', count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: 'toy', count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
+    ColoringCategory(id: 'construction', count: 1, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
   ];
 
   @override
