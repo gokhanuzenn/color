@@ -24,7 +24,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
   bool _isCheckingBilling = true;
 
   // Google Test Interstitial Ad Unit ID
-  final String _adUnitId = 'ca-app-pub-3940256099942544/1033173712';
+  final String _adUnitId = 'ca-app-pub-9171283684710932';
 
   @override
   void initState() {
@@ -35,7 +35,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
   Future<void> _init() async {
     final adFree = await MockBillingManager.isAdFree();
     if (!mounted) return;
-    
+
     if (adFree) {
       _navigateToCanvas();
     } else {
@@ -66,7 +66,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
 
   void _showInterstitialAd() {
     if (_interstitialAd == null) return;
-    
+
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
