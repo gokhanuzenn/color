@@ -10,7 +10,7 @@
             android:value="ca-app-pub-9171283684710932"/>
 
         <activity
-            android:name="com.gokhanuzenn.color_world.MainActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
