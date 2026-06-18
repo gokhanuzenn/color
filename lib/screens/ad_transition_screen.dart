@@ -24,7 +24,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
   bool _isCheckingBilling = true;
 
   // Google Test Interstitial Ad Unit ID
-  final String _adUnitId = 'ca-app-pub-9171283684710932';
+  final String _adUnitId = 'ca-app-pub-3940256099942544/1033173712';
 
   @override
   void initState() {
