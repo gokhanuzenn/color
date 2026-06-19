@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -17,21 +18,21 @@ enum DrawingTool {
   kursun,
   tukenmez,
   keceli,
-  jelKalem,
+  jel_kalem,
   komur,
-  boyaKalemi,
-  fircaClassic,
-  suluFirca,
+  boya_kalemi,
+  firca_classic,
+  sulu_firca,
   sprey,
-  yagliBoya,
-  kuruFirca,
-  gradyanFircasi,
+  yagli_boya,
+  kuru_firca,
+  gradyan_fircasi,
   eraser,
-  pencilHb,
-  pencil2b,
-  pencil4b,
-  pencil6b,
-  pencil9b,
+  pencil_hb,
+  pencil_2b,
+  pencil_4b,
+  pencil_6b,
+  pencil_9b,
 }
 
 abstract class PaintOp {
@@ -93,18 +94,18 @@ class PathOp extends PaintOp {
     }
 
     switch (tool) {
-      case DrawingTool.pencilHb:
-      case DrawingTool.pencil2b:
-      case DrawingTool.pencil4b:
-      case DrawingTool.pencil6b:
-      case DrawingTool.pencil9b:
+      case DrawingTool.pencil_hb:
+      case DrawingTool.pencil_2b:
+      case DrawingTool.pencil_4b:
+      case DrawingTool.pencil_6b:
+      case DrawingTool.pencil_9b:
       case DrawingTool.kursun:
         final Map<DrawingTool, Map<String, dynamic>> config = {
-          DrawingTool.pencilHb: {'a': 0.7, 'w': 0.1},
-          DrawingTool.pencil2b: {'a': 0.6, 'w': 0.15},
-          DrawingTool.pencil4b: {'a': 0.5, 'w': 0.2},
-          DrawingTool.pencil6b: {'a': 0.4, 'w': 0.3},
-          DrawingTool.pencil9b: {'a': 0.35, 'w': 0.4},
+          DrawingTool.pencil_hb: {'a': 0.7, 'w': 0.1},
+          DrawingTool.pencil_2b: {'a': 0.6, 'w': 0.15},
+          DrawingTool.pencil_4b: {'a': 0.5, 'w': 0.2},
+          DrawingTool.pencil_6b: {'a': 0.4, 'w': 0.3},
+          DrawingTool.pencil_9b: {'a': 0.35, 'w': 0.4},
           DrawingTool.kursun: {'a': 0.8, 'w': 0.1},
         };
         final settings = config[tool] ?? {'a': 0.8, 'w': 0.1};
@@ -121,7 +122,7 @@ class PathOp extends PaintOp {
         }
         break;
 
-      case DrawingTool.suluFirca:
+      case DrawingTool.sulu_firca:
         paint.color = color.withValues(alpha: finalOpacity * 0.08);
         paint.strokeWidth = strokeWidth;
         final rnd = math.Random(42);
@@ -133,21 +134,15 @@ class PathOp extends PaintOp {
           for (var p in points) {
             if (p != null) {
               Offset off = Offset((rnd.nextDouble()-0.5)*4, (rnd.nextDouble()-0.5)*4);
-              if (first) {
-                bristlePath.moveTo(p.dx + off.dx, p.dy + off.dy);
-                first = false;
-              } else {
-                bristlePath.lineTo(p.dx + off.dx, p.dy + off.dy);
-              }
-            } else {
-              first = true;
-            }
+              if (first) { bristlePath.moveTo(p.dx + off.dx, p.dy + off.dy); first = false; }
+              else bristlePath.lineTo(p.dx + off.dx, p.dy + off.dy);
+            } else { first = true; }
           }
           canvas.drawPath(bristlePath, paint);
         }
         break;
 
-      case DrawingTool.fircaClassic:
+      case DrawingTool.firca_classic:
         paint.color = color.withValues(alpha: finalOpacity * 0.7);
         const bristleCount = 10;
         for (int i = 0; i < bristleCount; i++) {
@@ -157,21 +152,15 @@ class PathOp extends PaintOp {
           paint.strokeWidth = math.max(1, strokeWidth / 8);
           for (var p in points) {
             if (p != null) {
-              if (first) {
-                bPath.moveTo(p.dx + offset, p.dy + offset);
-                first = false;
-              } else {
-                bPath.lineTo(p.dx + offset, p.dy + offset);
-              }
-            } else {
-              first = true;
-            }
+              if (first) { bPath.moveTo(p.dx + offset, p.dy + offset); first = false; }
+              else bPath.lineTo(p.dx + offset, p.dy + offset);
+            } else { first = true; }
           }
           canvas.drawPath(bPath, paint);
         }
         break;
 
-      case DrawingTool.boyaKalemi:
+      case DrawingTool.boya_kalemi:
         paint.color = color.withValues(alpha: finalOpacity * 0.6);
         paint.strokeWidth = strokeWidth * 0.8;
         canvas.drawPath(path, paint);
@@ -197,7 +186,7 @@ class PathOp extends PaintOp {
     'type': 'path',
     'points': points.map((p) => p == null ? null : {'x': p.dx, 'y': p.dy}).toList(),
     'tool': tool.index,
-    'color': color.toARGB32(),
+    'color': color.value,
     'strokeWidth': strokeWidth,
     'opacity': opacity,
   };
@@ -228,9 +217,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   List<PaintOp> operations = [];
   Color selectedColor = const Color(0xFFE94E77);
   Color secondaryColor = const Color(0xFFF6AD55);
-  DrawingTool activeTool = DrawingTool.pencilHb;
-  DrawingTool _lastPencilTool = DrawingTool.pencilHb;
-  DrawingTool _lastBrushTool = DrawingTool.suluFirca;
+  DrawingTool activeTool = DrawingTool.pencil_hb;
+  DrawingTool _lastPencilTool = DrawingTool.pencil_hb;
+  DrawingTool _lastBrushTool = DrawingTool.sulu_firca;
   double brushWidth = 20.0;
   bool showSubToolMenu = false;
   String? currentMenuType;
@@ -253,7 +242,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   final List<Color> palette = [
     const Color(0xFF000000), const Color(0xFFFFFFFF), const Color(0xFFFF0000),
-    const Color(0xFF00FF00), const Color(0xFF000000), const Color(0xFFFFFF00),
+    const Color(0xFF00FF00), const Color(0xFF0000FF), const Color(0xFFFFFF00),
     const Color(0xFFFFA500), const Color(0xFF800080), const Color(0xFFFFC0CB),
     const Color(0xFFA52A2A), const Color(0xFF808080), const Color(0xFFADD8E6),
     const Color(0xFF90EE90), const Color(0xFFE6E6FA), const Color(0xFFFFFFE0),
@@ -344,9 +333,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
-      _saveProgress();
-    }
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) _saveProgress();
   }
 
   Future<File> _getSaveFile() async {
@@ -359,9 +346,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       final file = await _getSaveFile();
       final List<Map<String, dynamic>> jsonData = operations.map((op) => op.toJson()).toList();
       await file.writeAsString(jsonEncode(jsonData));
-    } catch (e) {
-      debugPrint('Error saving progress: $e');
-    }
+    } catch (e) { debugPrint('Error saving progress: $e'); }
   }
 
   Future<void> _loadProgress() async {
@@ -375,18 +360,14 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         });
         _updateCache();
       }
-    } catch (e) {
-      debugPrint('Error loading progress: $e');
-    }
+    } catch (e) { debugPrint('Error loading progress: $e'); }
   }
 
   Future<void> _loadTemplate() async {
     final ByteData data = await rootBundle.load(widget.assetPath);
     final ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
     final ui.FrameInfo fi = await codec.getNextFrame();
-    setState(() {
-      templateImage = fi.image;
-    });
+    setState(() { templateImage = fi.image; });
   }
 
   Future<void> _updateCache() async {
@@ -395,9 +376,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     final height = templateImage!.height.toDouble();
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
-    if (_cachedDrawing != null) {
-      canvas.drawImage(_cachedDrawing!, Offset.zero, Paint());
-    }
+    if (_cachedDrawing != null) canvas.drawImage(_cachedDrawing!, Offset.zero, Paint());
     for (int i = _lastCachedCount; i < operations.length - 1; i++) {
       operations[i].draw(canvas, 1.0, secondaryColor);
     }
@@ -405,7 +384,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     final img = await picture.toImage(width.toInt(), height.toInt());
     setState(() {
       _cachedDrawing = img;
-      _lastCachedCount = operations.isNotEmpty ? operations.length - 1 : 0;
+      _lastCachedCount = operations.length > 0 ? operations.length - 1 : 0;
     });
   }
 
@@ -420,9 +399,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   void _saveHistory() {
     _undoStack.add(List<PaintOp>.from(operations));
     _redoStack.clear();
-    if (_undoStack.length > 30) {
-      _undoStack.removeAt(0);
-    }
+    if (_undoStack.length > 30) _undoStack.removeAt(0);
   }
 
   void _undo() {
@@ -455,8 +432,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      final dynamic result = await ImageGallerySaver.saveImage(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
-      debugPrint('Export result: $result');
+      final result = await ImageGallerySaver.saveImage(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.imageSaved)));
       }
@@ -539,9 +515,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
                             }
                           },
                           onPanEnd: (details) {
-                            if (operations.isNotEmpty && operations.last is PathOp) {
-                              (operations.last as PathOp).points.add(null);
-                            }
+                            if (operations.isNotEmpty && operations.last is PathOp) (operations.last as PathOp).points.add(null);
                             _updateCache();
                           },
                           child: RepaintBoundary(
@@ -588,8 +562,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _toolButton(DrawingTool.pencilHb, Icons.edit, L.pencil, isMenu: true),
-              _toolButton(DrawingTool.suluFirca, Icons.brush, L.brush, isMenu: true),
+              _toolButton(DrawingTool.pencil_hb, Icons.edit, L.pencil, isMenu: true),
+              _toolButton(DrawingTool.sulu_firca, Icons.brush, L.brush, isMenu: true),
               _toolButton(DrawingTool.eraser, Icons.delete_outline, L.eraser),
             ],
           ),
@@ -628,19 +602,19 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     if (!showSubToolMenu || currentMenuType == null) return const SizedBox.shrink();
     final subTools = currentMenuType == L.pencil
         ? [
-            {'tool': DrawingTool.pencilHb, 'label': 'HB'},
+            {'tool': DrawingTool.pencil_hb, 'label': 'HB'},
             {'tool': DrawingTool.kursun, 'label': L.crayon},
-            {'tool': DrawingTool.pencil2b, 'label': '2B'},
-            {'tool': DrawingTool.pencil4b, 'label': '4B'},
-            {'tool': DrawingTool.pencil6b, 'label': '6B'},
-            {'tool': DrawingTool.pencil9b, 'label': '9B'},
+            {'tool': DrawingTool.pencil_2b, 'label': '2B'},
+            {'tool': DrawingTool.pencil_4b, 'label': '4B'},
+            {'tool': DrawingTool.pencil_6b, 'label': '6B'},
+            {'tool': DrawingTool.pencil_9b, 'label': '9B'},
             {'tool': DrawingTool.komur, 'label': L.charcoal},
           ]
         : [
-            {'tool': DrawingTool.suluFirca, 'label': L.watercolor},
+            {'tool': DrawingTool.sulu_firca, 'label': L.watercolor},
             {'tool': DrawingTool.keceli, 'label': L.marker},
-            {'tool': DrawingTool.fircaClassic, 'label': L.classic},
-            {'tool': DrawingTool.boyaKalemi, 'label': L.dryBrush},
+            {'tool': DrawingTool.firca_classic, 'label': L.classic},
+            {'tool': DrawingTool.boya_kalemi, 'label': L.dryBrush},
           ];
     return Container(
       height: 60, margin: const EdgeInsets.only(bottom: 8),
@@ -658,11 +632,8 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
               borderRadius: BorderRadius.circular(30),
               onTap: () => setState(() {
                 activeTool = tool;
-                if (currentMenuType == L.pencil) {
-                  _lastPencilTool = tool;
-                } else if (currentMenuType == L.brush) {
-                  _lastBrushTool = tool;
-                }
+                if (currentMenuType == L.pencil) _lastPencilTool = tool;
+                else if (currentMenuType == L.brush) _lastBrushTool = tool;
               }),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -686,22 +657,9 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     return GestureDetector(
       onTap: () {
         if (isMenu) {
-          if (currentMenuType == label) {
-            setState(() => showSubToolMenu = !showSubToolMenu);
-          } else {
-            setState(() {
-              showSubToolMenu = true;
-              currentMenuType = label;
-              activeTool = (label == L.brush) ? _lastBrushTool : _lastPencilTool;
-            });
-          }
-        } else {
-          setState(() {
-            activeTool = tool;
-            showSubToolMenu = false;
-            currentMenuType = null;
-          });
-        }
+          if (currentMenuType == label) setState(() => showSubToolMenu = !showSubToolMenu);
+          else setState(() { showSubToolMenu = true; currentMenuType = label; activeTool = (label == L.brush) ? _lastBrushTool : _lastPencilTool; });
+        } else { setState(() { activeTool = tool; showSubToolMenu = false; currentMenuType = null; }); }
       },
       child: Column(
         children: [
@@ -768,9 +726,7 @@ class ColoringPainter extends CustomPainter {
     canvas.scale(scale);
 
     canvas.saveLayer(Rect.fromLTWH(0, 0, width, height), Paint());
-    if (cachedDrawing != null) {
-      canvas.drawImage(cachedDrawing!, Offset.zero, Paint());
-    }
+    if (cachedDrawing != null) canvas.drawImage(cachedDrawing!, Offset.zero, Paint());
     for (int i = cachedCount; i < operations.length; i++) {
       operations[i].draw(canvas, 1.0, secondaryColor);
     }
