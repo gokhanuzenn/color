@@ -1,5 +1,4 @@
 import 'dart:ui';
-import 'dart:io' show Platform;
 
 class L {
   static String get languageCode {
@@ -20,7 +19,7 @@ class L {
   static String get confirm => isTr ? 'ONAYLA' : 'CONFIRM';
   static String get codeAccepted => isTr ? 'Tebrikler! Kod kabul edildi.' : 'Congratulations! Code accepted.';
   static String get invalidCode => isTr ? 'Geçersiz kod!' : 'Invalid code!';
-  static String get removeAds => isTr ? 'REKLAMLARI KALDIR ($2.99)' : 'REMOVE ADS ($2.99)';
+  static String get removeAds => isTr ? 'REKLAMLARI KALDIR (\$2.99)' : 'REMOVE ADS (\$2.99)';
   static String get adsRemoved => isTr ? 'Reklamlar kaldırıldı! Teşekkürler.' : 'Ads removed! Thank you.';
   static String get imagesCount => isTr ? 'GÖRSEL' : 'IMAGES';
   
