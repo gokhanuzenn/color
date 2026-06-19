@@ -164,9 +164,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
                               );
                             }
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(L.invalidCode)),
-                            );
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(L.invalidCode)),
+                              );
+                            }
                           }
                         },
                         child: Container(
@@ -325,12 +327,12 @@ class CategoryCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  color: category.themeColor.withOpacity(0.3),
+                  color: category.themeColor.withValues(alpha: 0.3),
                   child: Center(
                     child: Icon(
                       category.icon,
                       size: 64,
-                      color: category.themeColor.withOpacity(0.8),
+                      color: category.themeColor.withValues(alpha: 0.8),
                     ),
                   ),
                 ),
