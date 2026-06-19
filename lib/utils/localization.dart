@@ -1,7 +1,15 @@
 import 'dart:ui';
+import 'dart:io' show Platform;
 
 class L {
-  static String get languageCode => PlatformDispatcher.instance.locale.languageCode;
+  static String get languageCode {
+    try {
+      return PlatformDispatcher.instance.locale.languageCode;
+    } catch (_) {
+      return 'en';
+    }
+  }
+
   static bool get isTr => languageCode == 'tr';
 
   static String get appTitle => isTr ? 'BOYAMA DÜNYASI' : 'COLOR WORLD';
