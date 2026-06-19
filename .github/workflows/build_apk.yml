@@ -31,13 +31,13 @@ jobs:
       - name: Create local.properties
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
-          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+          echo "flutter.sdk=$FLUTTER_HOME" >> android/local.properties
 
       - name: Build Debug APK
         run: flutter build apk --debug --verbose --no-pub
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-          # Explicitly pass FLUTTER_ROOT to the environment for settings.gradle.kts
+          # Use FLUTTER_HOME directly as it is the absolute path provided by the action
           FLUTTER_ROOT: ${{ env.FLUTTER_HOME }}
 
       - name: Upload APK artifact
