@@ -120,7 +120,7 @@ class TemplateCard extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialAnimationFrame(
+          MaterialPageRoute(
             builder:
                 (context) => AdTransitionScreen(
                   assetPath: template.assetPath,
