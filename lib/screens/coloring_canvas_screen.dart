@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:color_world/mock_billing.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:gal/gal.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:color_world/utils/localization.dart';
 
@@ -432,7 +432,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      final result = await ImageGallerySaverPlus.saveImage(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
+      await Gal.putImageBytes(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.imageSaved)));
       }
