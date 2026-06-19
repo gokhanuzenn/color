@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -198,7 +197,7 @@ class PathOp extends PaintOp {
     'type': 'path',
     'points': points.map((p) => p == null ? null : {'x': p.dx, 'y': p.dy}).toList(),
     'tool': tool.index,
-    'color': color.value,
+    'color': color.toARGB32(),
     'strokeWidth': strokeWidth,
     'opacity': opacity,
   };
@@ -254,7 +253,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   final List<Color> palette = [
     const Color(0xFF000000), const Color(0xFFFFFFFF), const Color(0xFFFF0000),
-    const Color(0xFF00FF00), const Color(0xFF0000FF), const Color(0xFFFFFF00),
+    const Color(0xFF00FF00), const Color(0xFF000000), const Color(0xFFFFFF00),
     const Color(0xFFFFA500), const Color(0xFF800080), const Color(0xFFFFC0CB),
     const Color(0xFFA52A2A), const Color(0xFF808080), const Color(0xFFADD8E6),
     const Color(0xFF90EE90), const Color(0xFFE6E6FA), const Color(0xFFFFFFE0),
@@ -406,7 +405,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     final img = await picture.toImage(width.toInt(), height.toInt());
     setState(() {
       _cachedDrawing = img;
-      _lastCachedCount = operations.length > 0 ? operations.length - 1 : 0;
+      _lastCachedCount = operations.isNotEmpty ? operations.length - 1 : 0;
     });
   }
 
@@ -659,8 +658,11 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
               borderRadius: BorderRadius.circular(30),
               onTap: () => setState(() {
                 activeTool = tool;
-                if (currentMenuType == L.pencil) _lastPencilTool = tool;
-                else if (currentMenuType == L.brush) _lastBrushTool = tool;
+                if (currentMenuType == L.pencil) {
+                  _lastPencilTool = tool;
+                } else if (currentMenuType == L.brush) {
+                  _lastBrushTool = tool;
+                }
               }),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
