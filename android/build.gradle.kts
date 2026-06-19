@@ -1,10 +1,3 @@
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-    }
-}
-
 rootProject.layout.buildDirectory.value(rootProject.layout.buildDirectory.dir("../../build").get())
 
 subprojects {
