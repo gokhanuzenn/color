@@ -78,7 +78,7 @@ class ImageSelectionScreen extends StatelessWidget {
               L.selectImageToColor,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: const Color(0xFF2D2D2D).withOpacity(0.7),
+                color: const Color(0xFF2D2D2D).withValues(alpha: 0.7),
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
@@ -112,7 +112,7 @@ class TemplateCard extends StatelessWidget {
   final ColoringTemplate template;
   final Color themeColor;
 
-  const TemplateCard({required this.template, required this.themeColor});
+  const TemplateCard({super.key, required this.template, required this.themeColor});
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +147,7 @@ class TemplateCard extends StatelessWidget {
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
-                  color: themeColor.withOpacity(0.05),
+                  color: themeColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(13),
                 ),
               ),
@@ -164,7 +164,7 @@ class TemplateCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.image_outlined,
-                          color: themeColor.withOpacity(0.5),
+                          color: themeColor.withValues(alpha: 0.5),
                           size: 40,
                         ),
                         const SizedBox(height: 8),
