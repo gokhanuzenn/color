@@ -23,6 +23,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: 'stable'
           channel: 'stable'
 
       - name: Install dependencies
@@ -31,7 +32,7 @@ jobs:
       - name: Create local.properties
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
-          echo "flutter.sdk=$FLUTTER_HOME" >> android/local.properties
+          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
 
       - name: Build Debug APK
         run: |
@@ -40,7 +41,7 @@ jobs:
           flutter build apk --debug --verbose --no-pub
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
-          FLUTTER_ROOT: ${{ env.FLUTTER_HOME }}
+          FLUTTER_ROOT: ${{ env.FLUTTER_ROOT }}
 
       - name: Upload APK artifact
         if: success()
