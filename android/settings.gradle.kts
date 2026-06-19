@@ -6,7 +6,6 @@ pluginManagement {
             localPropsFile.inputStream().use { properties.load(it) }
         }
         
-        // Prioritize Environment Variable (set in CI) over local.properties
         val path = System.getenv("FLUTTER_ROOT") ?: properties.getProperty("flutter.sdk")
         path ?: ""
     }
@@ -29,6 +28,7 @@ plugins {
 }
 
 include(":app")
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
