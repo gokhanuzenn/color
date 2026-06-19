@@ -29,10 +29,10 @@ enum DrawingTool {
   gradyanFircasi,
   eraser,
   pencilHb,
-  pencil_2b,
-  pencil_4b,
-  pencil_6b,
-  pencil_9b,
+  pencil2b,
+  pencil4b,
+  pencil6b,
+  pencil9b,
 }
 
 abstract class PaintOp {
@@ -95,17 +95,17 @@ class PathOp extends PaintOp {
 
     switch (tool) {
       case DrawingTool.pencilHb:
-      case DrawingTool.pencil_2b:
-      case DrawingTool.pencil_4b:
-      case DrawingTool.pencil_6b:
-      case DrawingTool.pencil_9b:
+      case DrawingTool.pencil2b:
+      case DrawingTool.pencil4b:
+      case DrawingTool.pencil6b:
+      case DrawingTool.pencil9b:
       case DrawingTool.kursun:
         final Map<DrawingTool, Map<String, dynamic>> config = {
           DrawingTool.pencilHb: {'a': 0.7, 'w': 0.1},
-          DrawingTool.pencil_2b: {'a': 0.6, 'w': 0.15},
-          DrawingTool.pencil_4b: {'a': 0.5, 'w': 0.2},
-          DrawingTool.pencil_6b: {'a': 0.4, 'w': 0.3},
-          DrawingTool.pencil_9b: {'a': 0.35, 'w': 0.4},
+          DrawingTool.pencil2b: {'a': 0.6, 'w': 0.15},
+          DrawingTool.pencil4b: {'a': 0.5, 'w': 0.2},
+          DrawingTool.pencil6b: {'a': 0.4, 'w': 0.3},
+          DrawingTool.pencil9b: {'a': 0.35, 'w': 0.4},
           DrawingTool.kursun: {'a': 0.8, 'w': 0.1},
         };
         final settings = config[tool] ?? {'a': 0.8, 'w': 0.1};
@@ -631,10 +631,10 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         ? [
             {'tool': DrawingTool.pencilHb, 'label': 'HB'},
             {'tool': DrawingTool.kursun, 'label': L.crayon},
-            {'tool': DrawingTool.pencil_2b, 'label': '2B'},
-            {'tool': DrawingTool.pencil_4b, 'label': '4B'},
-            {'tool': DrawingTool.pencil_6b, 'label': '6B'},
-            {'tool': DrawingTool.pencil_9b, 'label': '9B'},
+            {'tool': DrawingTool.pencil2b, 'label': '2B'},
+            {'tool': DrawingTool.pencil4b, 'label': '4B'},
+            {'tool': DrawingTool.pencil6b, 'label': '6B'},
+            {'tool': DrawingTool.pencil9b, 'label': '9B'},
             {'tool': DrawingTool.komur, 'label': L.charcoal},
           ]
         : [
