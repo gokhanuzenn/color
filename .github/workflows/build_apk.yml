@@ -30,19 +30,15 @@ jobs:
 
       - name: Create local.properties
         run: |
-          # Use FLUTTER_ROOT as the source of truth for the SDK path
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
           echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
-          echo "Generated local.properties:"
-          cat android/local.properties
 
       - name: Build Debug APK
-        # Use 'flutter build apk' directly. 
-        # The -v flag is already there, but we ensure it runs in the right directory.
         run: flutter build apk --debug --verbose --no-pub
-        working-directory: .
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
+          # Explicitly pass FLUTTER_ROOT to the environment for settings.gradle.kts
+          FLUTTER_ROOT: ${{ env.FLUTTER_HOME }}
 
       - name: Upload APK artifact
         if: success()
