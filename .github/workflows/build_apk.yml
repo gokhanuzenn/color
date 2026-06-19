@@ -31,10 +31,19 @@ jobs:
       - name: Create local.properties
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
-          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+          # The flutter-action sets FLUTTER_ROOT, but let's be double sure
+          if [ -z "$FLUTTER_ROOT" ]; then
+            echo "flutter.sdk=$(which flutter | sed 's/\/bin\/flutter//')" >> android/local.properties
+          else
+            echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+          fi
+          cat android/local.properties
 
       - name: Build Debug APK
-        run: flutter build apk --debug --verbose
+        run: |
+          # Use --no-pub because we already ran flutter pub get
+          # The -v (verbose) is crucial to see exactly where Gradle or the compiler fails
+          flutter build apk --debug --verbose --no-pub
         env:
           JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
 
