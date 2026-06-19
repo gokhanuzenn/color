@@ -31,18 +31,11 @@ jobs:
       - name: Create local.properties
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
-          FLUTTER_PATH=$(flutter sdk-path)
-          echo "flutter.sdk=$FLUTTER_PATH" >> android/local.properties
-          cat android/local.properties
+          # Using FLUTTER_ROOT which is standard for this action
+          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
 
       - name: Build Debug APK
-        run: |
-          # Use verbose logging to catch the exact error if it fails
-          flutter build apk --debug -v
-
-      - name: Upload APK artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+        run: flutter build apk --debug --verbose
+        env:
+          # Explicitly set JAVA_HOME for the build process
+          JAVA_HOME: ${{ env.JAVA_HOME_17_X64 }}
