@@ -8,11 +8,13 @@ pluginManagement {
         
         // Prioritize Environment Variable (set in CI) over local.properties
         val path = System.getenv("FLUTTER_ROOT") ?: properties.getProperty("flutter.sdk")
-        require(path != null) { "Flutter SDK path not found. Define FLUTTER_ROOT env var or flutter.sdk in local.properties" }
-        path
+        // require(path != null) { "Flutter SDK path not found. Define FLUTTER_ROOT env var or flutter.sdk in local.properties" }
+        path ?: ""
     }
 
-    includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    if (flutterSdkPath.isNotEmpty()) {
+        includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
+    }
 
     repositories {
         google()
