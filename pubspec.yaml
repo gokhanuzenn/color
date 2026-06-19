@@ -13,7 +13,7 @@ dependencies:
   google_mobile_ads: ^5.1.0
   shared_preferences: ^2.2.0
   path_provider: ^2.1.1
-  image_gallery_saver: ^5.0.0
+  image_gallery_saver: ^2.0.3
   permission_handler: ^11.0.1
 
 dev_dependencies:
