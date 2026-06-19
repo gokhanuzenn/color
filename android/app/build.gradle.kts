@@ -8,7 +8,6 @@ plugins {
 android {
     namespace = "com.gokhanuzenn.color_world"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
