@@ -31,7 +31,11 @@ jobs:
       - name: Create local.properties
         run: |
           echo "sdk.dir=$ANDROID_SDK_ROOT" > android/local.properties
-          echo "flutter.sdk=$FLUTTER_ROOT" >> android/local.properties
+          # Use 'flutter sdk-path' as a fallback if $FLUTTER_ROOT is empty
+          FLUTTER_PATH=$(flutter sdk-path)
+          echo "flutter.sdk=$FLUTTER_PATH" >> android/local.properties
+          echo "Generated local.properties content:"
+          cat android/local.properties
 
       - name: Build Debug APK
         run: flutter build apk --debug
