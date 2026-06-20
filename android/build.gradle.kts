@@ -10,11 +10,7 @@ subprojects {
         val project = this
         if (project.extensions.findByName("android") != null) {
             val android = project.extensions.getByName("android") as com.android.build.gradle.BaseExtension
-            if (android.namespace == null) {
-                android.namespace = project.group.toString()
-            }
             
-            // Fix JVM target compatibility issues across all modules and dependencies
             android.compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
@@ -22,7 +18,6 @@ subprojects {
         }
     }
 
-    // Robust task-based Kotlin JVM target configuration
     tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
         kotlinOptions {
             jvmTarget = "17"
