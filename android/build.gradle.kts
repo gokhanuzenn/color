@@ -14,8 +14,7 @@ subprojects {
                 android.namespace = project.group.toString()
             }
             
-            // Fix JVM target compatibility issues (e.g. image_gallery_saver reporting 1.8 vs 21)
-            // Force Java to target 17 across all modules and dependencies
+            // Fix JVM target compatibility issues across all modules and dependencies
             android.compileOptions {
                 sourceCompatibility = JavaVersion.VERSION_17
                 targetCompatibility = JavaVersion.VERSION_17
