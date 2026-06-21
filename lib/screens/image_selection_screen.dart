@@ -1,209 +1,162 @@
 import 'package:flutter/material.dart';
-import 'package:color_world/screens/ad_transition_screen.dart';
-import 'package:color_world/utils/localization.dart';
-
-class ColoringTemplate {
-  final String id;
-  final String assetPath;
-  final String categoryId;
-
-  ColoringTemplate({
-    required this.id,
-    required this.assetPath,
-    required this.categoryId,
-  });
-}
+import 'package:color_world/screens/coloring_canvas_screen.dart';
 
 class ImageSelectionScreen extends StatelessWidget {
   final String categoryId;
   final String categoryTitle;
-  final Color themeColor;
-  final int templateCount;
 
   const ImageSelectionScreen({
     super.key,
     required this.categoryId,
     required this.categoryTitle,
-    required this.themeColor,
-    required this.templateCount,
   });
 
-  List<ColoringTemplate> _getTemplates() {
-    String prefix = categoryId;
-    return List.generate(templateCount, (index) {
-      final numberStr = (index + 1).toString().padLeft(3, '0');
-      return ColoringTemplate(
-        id: '${prefix}_$numberStr',
-        assetPath: 'assets/templates/${prefix}_$numberStr.png',
-        categoryId: categoryId,
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final templates = _getTemplates();
-
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFBF7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFFDFBF7),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF2D2D2D)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: true,
-        title: Text(
-          categoryTitle.toUpperCase(),
-          style: const TextStyle(
-            color: Color(0xFF2D2D2D),
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.5,
-            fontSize: 18,
-          ),
-        ),
-      ),
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Color(0xFF2D2D2D), width: 3),
-              ),
+      appBar: AppBar(title: Text(categoryTitle.toUpperCase())),
+      body: FutureBuilder<List<String>>(
+        // categoryId göndererek sadece o kategoriye ait resimleri filtreliyoruz
+        future: _loadImages(categoryId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Bu kategoride resim bulunamadı."));
+          }
+          
+          final images = snapshot.data!;
+          return GridView.builder(
+            padding: const EdgeInsets.all(16.0),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, crossAxisSpacing: 16.0, mainAxisSpacing: 16.0,
             ),
-            child: Text(
-              L.selectImageToColor,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: const Color(0xFF2D2D2D).withValues(alpha: 0.7),
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(20),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-                childAspectRatio: 1.0,
-              ),
-              itemCount: templates.length,
-              itemBuilder: (context, index) {
-                return TemplateCard(
-                  template: templates[index],
-                  themeColor: themeColor,
-                );
-              },
-            ),
-          ),
-        ],
+            itemCount: images.length,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => ColoringCanvasScreen(
+                    assetPath: images[index], 
+                    templateId: images[index].split('/').last,
+                  ),
+                )),
+                child: Container(
+                  decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+                  child: Image.asset(images[index], fit: BoxFit.cover),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
-}
 
-class TemplateCard extends StatelessWidget {
-  final ColoringTemplate template;
-  final Color themeColor;
+  // BURASI KRİTİK: Dosyaları senin verdiğin isimlendirme formatına göre manuel ekliyoruz.
+  // Otomatik tarama yerine bu yöntem %100 çalışır.
+  Future<List<String>> _loadImages(String catId) async {
+    // Kategori anahtarları ile gerçek dosya adlarının eşleştirilmesi
+    Map<String, String> prefixMap = {
+      'ciftlik': 'ciftlik',
+      'dinozor': 'dinozor',
+      'sevimli_dostlar': 'sevimli_dostlar',
+      'vahsi_dostlar': 'vahsi_dostlar',
+      'girl': 'kiz_karakter',
+      'car': 'tasitlar',
+      'number': 'sayilar',
+      'food': 'yiyecekler',
+      'nature': 'doga',
+      'space': 'uzay',
+      'sea': 'okyanus',
+      'robot': 'robot',
+      'emoji': 'emoji',
+      'hero': 'kahraman',
+      'job': 'meslekler',
+      'letter': 'harfler',
+      'toy': 'oyuncak',
+      'construction': 'insaat',
+    };
 
-  const TemplateCard({super.key, required this.template, required this.themeColor});
+    String filePrefix = prefixMap[catId] ?? catId;
 
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => AdTransitionScreen(
-                  assetPath: template.assetPath,
-                  templateId: template.id,
-                ),
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0xFF2D2D2D),
-              offset: Offset(6, 6),
-              blurRadius: 0,
-            ),
-          ],
-        ),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: themeColor.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(13),
-                ),
-              ),
-            ),
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Image.asset(
-                  template.assetPath,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.image_outlined,
-                          color: themeColor.withValues(alpha: 0.5),
-                          size: 40,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          template.id.split('_').last,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF2D2D2D),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              left: 8,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: themeColor,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
-                ),
-                child: Text(
-                  '#${template.id.split('_').last}',
-                  style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    color: Color(0xFF2D2D2D),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    Map<String, int> counts = {
+      'ciftlik': 11,
+      'dinozor': 22, // Dinozor 22 tane (dinozor_1 to dinozor_22)
+      'sevimli_dostlar': 11,
+      'vahsi_dostlar': 11,
+      'girl': 22,
+      'car': 3, // tasitlar_1, tasitlar_2, tasitlar_3 (ayrıca tasitlar_004 vb var ama ana sayı 3 veya sıralı olanlar)
+      'number': 10, // sayilar_1 to sayilar_10 (sayilar_0 da var)
+      'food': 41,
+      'nature': 11,
+      'space': 8, // uzay_19 to uzay_26 (ayrıca uzay_001 vb var)
+      'sea': 20, // okyanus_1 to okyanus_20
+      'robot': 15,
+      'emoji': 15,
+      'hero': 19, // kahraman_1 to kahraman_19
+      'job': 31,
+      'letter': 25, // harfler_1 to harfler_25
+      'toy': 6, // oyuncak_1 to oyuncak_6
+      'construction': 24, // insaat_1 to insaat_24
+    };
+
+    int count = counts[catId] ?? 0;
+    List<String> images = [];
+
+    // Özel durumlar veya standart sıralı yapılar
+    if (catId == 'car') {
+      images = [
+        'assets/templates/tasitlar_1.png',
+        'assets/templates/tasitlar_2.png',
+        'assets/templates/tasitlar_3.png',
+        'assets/templates/tasitlar_004.png',
+        'assets/templates/tasitlar_005.png',
+        'assets/templates/tasitlar_006.png',
+        'assets/templates/tasitlar_007.png',
+        'assets/templates/tasitlar_008.png',
+        'assets/templates/tasitlar_009.png',
+        'assets/templates/tasitlar_010.png',
+        'assets/templates/tasitlar_011.png',
+      ];
+    } else if (catId == 'number') {
+      images = ['assets/templates/sayilar_0.png'];
+      for (int i = 1; i <= 10; i++) {
+        images.add('assets/templates/sayilar_$i.png');
+      }
+    } else if (catId == 'space') {
+      images = [
+        'assets/templates/uzay_001.png',
+        'assets/templates/uzay_002.png',
+        'assets/templates/uzay_003.png',
+        'assets/templates/uzay_004.png',
+        'assets/templates/uzay_005.png',
+        'assets/templates/uzay_006.png',
+        'assets/templates/uzay_007.png',
+        'assets/templates/uzay_008.png',
+        'assets/templates/uzay_009.png',
+        'assets/templates/uzay_010.png',
+        'assets/templates/uzay_011.png',
+        'assets/templates/uzay_012.png',
+        'assets/templates/uzay_013.png',
+        'assets/templates/uzay_014.png',
+        'assets/templates/uzay_015.png',
+        'assets/templates/uzay_016.png',
+        'assets/templates/uzay_017.png',
+        'assets/templates/uzay_018.png',
+        'assets/templates/uzay_19.png',
+        'assets/templates/uzay_20.png',
+        'assets/templates/uzay_21.png',
+        'assets/templates/uzay_22.png',
+        'assets/templates/uzay_23.png',
+        'assets/templates/uzay_24.png',
+        'assets/templates/uzay_25.png',
+        'assets/templates/uzay_26.png',
+      ];
+    } else {
+      images = List.generate(count, (index) => 'assets/templates/${filePrefix}_${index + 1}.png');
+    }
+
+    return images;
   }
 }
