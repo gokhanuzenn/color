@@ -156,7 +156,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w900,
-                        color: Colors.black.withValues(alpha: 0.7),
+                        color: Colors.black.withOpacity(0.7),
                       ),
                     ),
                   ],

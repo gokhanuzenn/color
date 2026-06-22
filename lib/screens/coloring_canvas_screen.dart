@@ -82,7 +82,7 @@ class PathOp extends PaintOp {
   void draw(Canvas canvas, double parentOpacity, Color secondaryColor) {
     final finalOpacity = opacity * parentOpacity;
     final paint = Paint()
-      ..color = color.withValues(alpha: finalOpacity)
+      ..color = color.withOpacity(finalOpacity)
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -109,7 +109,7 @@ class PathOp extends PaintOp {
           DrawingTool.kursun: {'a': 0.8, 'w': 0.1},
         };
         final settings = config[tool] ?? {'a': 0.8, 'w': 0.1};
-        paint.color = color.withValues(alpha: finalOpacity * (settings['a'] as double));
+        paint.color = color.withOpacity(finalOpacity * (settings['a'] as double));
         paint.strokeWidth = strokeWidth * (settings['w'] as double);
         canvas.drawPath(path, paint);
         
@@ -123,7 +123,7 @@ class PathOp extends PaintOp {
         break;
 
       case DrawingTool.sulu_firca:
-        paint.color = color.withValues(alpha: finalOpacity * 0.08);
+        paint.color = color.withOpacity(finalOpacity * 0.08);
         paint.strokeWidth = strokeWidth;
         final rnd = math.Random(42);
         for (int i = 0; i < 3; i++) {
@@ -143,7 +143,7 @@ class PathOp extends PaintOp {
         break;
 
       case DrawingTool.firca_classic:
-        paint.color = color.withValues(alpha: finalOpacity * 0.7);
+        paint.color = color.withOpacity(finalOpacity * 0.7);
         const bristleCount = 10;
         for (int i = 0; i < bristleCount; i++) {
           final bPath = ui.Path();
@@ -161,7 +161,7 @@ class PathOp extends PaintOp {
         break;
 
       case DrawingTool.boya_kalemi:
-        paint.color = color.withValues(alpha: finalOpacity * 0.6);
+        paint.color = color.withOpacity(finalOpacity * 0.6);
         paint.strokeWidth = strokeWidth * 0.8;
         canvas.drawPath(path, paint);
         final rnd = math.Random(42);
@@ -169,7 +169,7 @@ class PathOp extends PaintOp {
         for (var p in points) {
           if (p != null) {
             for (int j = 0; j < 5; j++) {
-              grainPaint.color = color.withValues(alpha: finalOpacity * rnd.nextDouble() * 0.4);
+              grainPaint.color = color.withOpacity(finalOpacity * rnd.nextDouble() * 0.4);
               canvas.drawRect(Rect.fromLTWH(p.dx + (rnd.nextDouble()-0.5)*strokeWidth, p.dy + (rnd.nextDouble()-0.5)*strokeWidth, 2, 2), grainPaint);
             }
           }
@@ -200,6 +200,46 @@ class PathOp extends PaintOp {
       opacity: (json['opacity'] as num).toDouble(),
     );
   }
+}
+
+class ColoringPainter extends CustomPainter {
+  final ui.Image? template;
+  final List<PaintOp> operations;
+  final Color secondaryColor;
+  final ui.Image? cachedDrawing;
+  final int cachedCount;
+
+  ColoringPainter({this.template, required this.operations, required this.secondaryColor, this.cachedDrawing, this.cachedCount = 0});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (template == null) {
+      // RESİM YOKSA BEYAZ DEĞİL GRİ GÖSTER
+      canvas.drawColor(Colors.grey.shade300, BlendMode.src);
+      return;
+    }
+    final width = template!.width.toDouble();
+    final height = template!.height.toDouble();
+    double scale = math.min(size.width / width, size.height / height);
+    double offsetX = (size.width - width * scale) / 2;
+    double offsetY = (size.height - height * scale) / 2;
+
+    canvas.save();
+    canvas.translate(offsetX, offsetY);
+    canvas.scale(scale);
+
+    canvas.saveLayer(Rect.fromLTWH(0, 0, width, height), Paint());
+    if (cachedDrawing != null) canvas.drawImage(cachedDrawing!, Offset.zero, Paint());
+    for (int i = cachedCount; i < operations.length; i++) {
+      operations[i].draw(canvas, 1.0, secondaryColor);
+    }
+    canvas.drawImage(template!, Offset.zero, Paint()..blendMode = BlendMode.multiply);
+    canvas.restore();
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant ColoringPainter oldDelegate) => true;
 }
 
 class ColoringCanvasScreen extends StatefulWidget {
@@ -364,10 +404,20 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Future<void> _loadTemplate() async {
-    final ByteData data = await rootBundle.load(widget.assetPath);
-    final ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
-    final ui.FrameInfo fi = await codec.getNextFrame();
-    setState(() { templateImage = fi.image; });
+    try {
+      final ByteData data = await rootBundle.load(widget.assetPath);
+      final ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
+      final ui.FrameInfo fi = await codec.getNextFrame();
+      setState(() { 
+        templateImage = fi.image;
+        print("✅ RESİM YÜKLENDI: ${widget.assetPath}");
+      });
+    } catch (e) {
+      print("❌ RESİM YÜKLENEMEDI: ${widget.assetPath} - Hata: $e");
+      setState(() {
+        templateImage = null;
+      });
+    }
   }
 
   Future<void> _updateCache() async {
@@ -458,85 +508,142 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       appBar: AppBar(
         backgroundColor: const Color(0xFFFDFBF7),
         elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: Color(0xFF2D2D2D)), onPressed: () => Navigator.pop(context)),
-        title: Text(L.appTitle, style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D), fontSize: 16)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF2D2D2D)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          L.appTitle,
+          style: const TextStyle(
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF2D2D2D),
+            fontSize: 16,
+          ),
+        ),
         actions: [
-          IconButton(icon: const Icon(Icons.undo, color: Color(0xFF2D2D2D)), onPressed: _undo),
-          IconButton(icon: const Icon(Icons.redo, color: Color(0xFF2D2D2D)), onPressed: _redo),
+          IconButton(
+            icon: const Icon(Icons.undo, color: Color(0xFF2D2D2D)),
+            onPressed: _undo,
+          ),
+          IconButton(
+            icon: const Icon(Icons.redo, color: Color(0xFF2D2D2D)),
+            onPressed: _redo,
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: TextButton(
               onPressed: _exportToGallery,
-              style: TextButton.styleFrom(backgroundColor: const Color(0xFF06D6A0), side: const BorderSide(color: Color(0xFF2D2D2D), width: 2)),
-              child: Text(L.save, style: const TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 10)),
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF06D6A0),
+                side: const BorderSide(color: Color(0xFF2D2D2D), width: 2),
+              ),
+              child: Text(
+                L.save,
+                style: const TextStyle(
+                  color: Color(0xFF2D2D2D),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 10,
+                ),
+              ),
             ),
           ),
         ],
-        bottom: PreferredSize(preferredSize: const Size.fromHeight(4), child: Container(color: const Color(0xFF2D2D2D), height: 4)),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(4),
+          child: SizedBox(
+            child: Divider(color: Color(0xFF2D2D2D), height: 4, thickness: 4),
+          ),
+        ),
       ),
       body: Column(
         children: [
           Expanded(
-            child: Listener(
-              onPointerDown: (event) => setState(() => _pointerCount++),
-              onPointerUp: (event) => setState(() => _pointerCount--),
-              onPointerCancel: (event) => setState(() => _pointerCount--),
-              child: InteractiveViewer(
-                transformationController: _transformationController,
-                minScale: 1.0,
-                maxScale: 10.0,
-                panEnabled: _pointerCount > 1,
-                scaleEnabled: _pointerCount > 1,
-                child: Center(
-                  child: AspectRatio(
-                    aspectRatio: templateImage != null ? templateImage!.width / templateImage!.height : 1.0,
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final size = constraints.biggest;
-                        return GestureDetector(
-                          onPanStart: (details) {
-                            if (_pointerCount > 1) return;
-                            _saveHistory();
-                            final pixelPos = _screenToPixel(details.localPosition, size);
-                            setState(() {
-                              operations.add(PathOp(points: [pixelPos], tool: activeTool, color: selectedColor, strokeWidth: brushWidth));
-                            });
-                          },
-                          onPanUpdate: (details) {
-                            if (_pointerCount > 1) return;
-                            if (operations.isNotEmpty && operations.last is PathOp) {
-                              final pixelPos = _screenToPixel(details.localPosition, size);
-                              final op = operations.last as PathOp;
-                              if (op.points.isNotEmpty && op.points.last != null && (pixelPos - op.points.last!).distance < 0.5) return;
-                              setState(() {
-                                op.points.add(pixelPos);
-                                op.invalidate();
-                              });
-                            }
-                          },
-                          onPanEnd: (details) {
-                            if (operations.isNotEmpty && operations.last is PathOp) (operations.last as PathOp).points.add(null);
-                            _updateCache();
-                          },
-                          child: RepaintBoundary(
-                            key: _repaintBoundaryKey,
-                            child: CustomPaint(
-                              painter: ColoringPainter(
-                                template: templateImage,
-                                operations: operations,
-                                secondaryColor: secondaryColor,
-                                cachedDrawing: _cachedDrawing,
-                                cachedCount: _lastCachedCount,
-                              ),
-                              size: Size.infinite,
+            child: Container(
+              color: Colors.grey.shade200, // BEYAZ DEĞİL GRİ - RESİM YOKSA GÖRÜRSÜN
+              child: templateImage == null
+                  ? const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text(
+                            'Resim yükleniyor...',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Listener(
+                      onPointerDown: (event) => setState(() => _pointerCount++),
+                      onPointerUp: (event) => setState(() => _pointerCount--),
+                      onPointerCancel: (event) => setState(() => _pointerCount--),
+                      child: InteractiveViewer(
+                        transformationController: _transformationController,
+                        minScale: 1.0,
+                        maxScale: 10.0,
+                        panEnabled: _pointerCount > 1,
+                        scaleEnabled: _pointerCount > 1,
+                        child: Center(
+                          child: AspectRatio(
+                            aspectRatio: templateImage!.width / templateImage!.height,
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final size = constraints.biggest;
+                                return GestureDetector(
+                                  onPanStart: (details) {
+                                    if (_pointerCount > 1) return;
+                                    _saveHistory();
+                                    final pixelPos = _screenToPixel(details.localPosition, size);
+                                    setState(() {
+                                      operations.add(PathOp(
+                                        points: [pixelPos],
+                                        tool: activeTool,
+                                        color: selectedColor,
+                                        strokeWidth: brushWidth,
+                                      ));
+                                    });
+                                  },
+                                  onPanUpdate: (details) {
+                                    if (_pointerCount > 1) return;
+                                    if (operations.isNotEmpty && operations.last is PathOp) {
+                                      final pixelPos = _screenToPixel(details.localPosition, size);
+                                      final op = operations.last as PathOp;
+                                      if (op.points.isNotEmpty &&
+                                          op.points.last != null &&
+                                          (pixelPos - op.points.last!).distance < 0.5) return;
+                                      setState(() {
+                                        op.points.add(pixelPos);
+                                        op.invalidate();
+                                      });
+                                    }
+                                  },
+                                  onPanEnd: (details) {
+                                    if (operations.isNotEmpty && operations.last is PathOp) {
+                                      (operations.last as PathOp).points.add(null);
+                                    }
+                                    _updateCache();
+                                  },
+                                  child: RepaintBoundary(
+                                    key: _repaintBoundaryKey,
+                                    child: CustomPaint(
+                                      painter: ColoringPainter(
+                                        template: templateImage,
+                                        operations: operations,
+                                        secondaryColor: secondaryColor,
+                                        cachedDrawing: _cachedDrawing,
+                                        cachedCount: _lastCachedCount,
+                                      ),
+                                      size: Size.infinite,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
-                        );
-                      }
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              ),
             ),
           ),
           _buildControls(),
@@ -545,9 +652,10 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     );
   }
 
+  // ============ KONTROLLER ============
   Widget _buildControls() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 20),
       decoration: const BoxDecoration(
         color: Color(0xFFFDFBF7),
         border: Border(top: BorderSide(color: Color(0xFF2D2D2D), width: 4)),
@@ -555,43 +663,95 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _buildSubToolMenu(),
-          const SizedBox(height: 12),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 200),
+            child: showSubToolMenu && currentMenuType != null
+                ? _buildSubToolMenu()
+                : const SizedBox.shrink(),
+          ),
+          const SizedBox(height: 8),
           _buildStrokeWidthSlider(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _toolButton(DrawingTool.pencil_hb, Icons.edit, L.pencil, isMenu: true),
-              _toolButton(DrawingTool.sulu_firca, Icons.brush, L.brush, isMenu: true),
-              _toolButton(DrawingTool.eraser, Icons.delete_outline, L.eraser),
+              _buildToolButton(
+                tool: DrawingTool.pencil_hb,
+                icon: Icons.edit,
+                label: 'Kalem',
+                isMenu: true,
+              ),
+              _buildToolButton(
+                tool: DrawingTool.sulu_firca,
+                icon: Icons.brush,
+                label: 'Fırça',
+                isMenu: true,
+              ),
+              _buildToolButton(
+                tool: DrawingTool.eraser,
+                icon: Icons.delete_outline,
+                label: 'Silgi',
+                isMenu: false,
+              ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           _buildPalette(),
         ],
       ),
     );
   }
 
-  Widget _buildStrokeWidthSlider() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-        boxShadow: const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
-      ),
-      child: Row(
+  Widget _buildToolButton({
+    required DrawingTool tool,
+    required IconData icon,
+    required String label,
+    bool isMenu = false,
+  }) {
+    bool isActive = isMenu
+        ? (currentMenuType == label && showSubToolMenu)
+        : (activeTool == tool);
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (isMenu) {
+            if (currentMenuType == label) {
+              showSubToolMenu = !showSubToolMenu;
+            } else {
+              showSubToolMenu = true;
+              currentMenuType = label;
+              if (label == 'Fırça') {
+                activeTool = _lastBrushTool;
+              } else {
+                activeTool = _lastPencilTool;
+              }
+            }
+          } else {
+            activeTool = tool;
+            showSubToolMenu = false;
+            currentMenuType = null;
+          }
+        });
+      },
+      child: Column(
         children: [
-          Text(L.size, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12)),
-          Expanded(
-            child: Slider(
-              value: brushWidth, min: 2.0, max: 100.0,
-              activeColor: const Color(0xFF2D2D2D),
-              inactiveColor: const Color(0xFF2D2D2D).withValues(alpha: 0.1),
-              onChanged: (v) => setState(() => brushWidth = v),
+          Container(
+            width: 54,
+            height: 54,
+            decoration: BoxDecoration(
+              color: isActive ? const Color(0xFFFFD166) : Colors.white,
+              border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+              boxShadow: isActive
+                  ? null
+                  : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
             ),
+            child: Icon(icon, color: const Color(0xFF2D2D2D), size: 28),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900),
           ),
         ],
       ),
@@ -599,25 +759,36 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Widget _buildSubToolMenu() {
-    if (!showSubToolMenu || currentMenuType == null) return const SizedBox.shrink();
-    final subTools = currentMenuType == L.pencil
-        ? [
-            {'tool': DrawingTool.pencil_hb, 'label': 'HB'},
-            {'tool': DrawingTool.kursun, 'label': L.crayon},
-            {'tool': DrawingTool.pencil_2b, 'label': '2B'},
-            {'tool': DrawingTool.pencil_4b, 'label': '4B'},
-            {'tool': DrawingTool.pencil_6b, 'label': '6B'},
-            {'tool': DrawingTool.pencil_9b, 'label': '9B'},
-            {'tool': DrawingTool.komur, 'label': L.charcoal},
-          ]
-        : [
-            {'tool': DrawingTool.sulu_firca, 'label': L.watercolor},
-            {'tool': DrawingTool.keceli, 'label': L.marker},
-            {'tool': DrawingTool.firca_classic, 'label': L.classic},
-            {'tool': DrawingTool.boya_kalemi, 'label': L.dryBrush},
-          ];
+    if (currentMenuType == null) return const SizedBox.shrink();
+
+    final List<Map<String, dynamic>> subTools;
+    if (currentMenuType == 'Kalem') {
+      subTools = [
+        {'tool': DrawingTool.pencil_hb, 'label': 'HB'},
+        {'tool': DrawingTool.kursun, 'label': 'Kurşun'},
+        {'tool': DrawingTool.pencil_2b, 'label': '2B'},
+        {'tool': DrawingTool.pencil_4b, 'label': '4B'},
+        {'tool': DrawingTool.pencil_6b, 'label': '6B'},
+        {'tool': DrawingTool.pencil_9b, 'label': '9B'},
+        {'tool': DrawingTool.komur, 'label': 'Kömür'},
+      ];
+    } else if (currentMenuType == 'Fırça') {
+      subTools = [
+        {'tool': DrawingTool.sulu_firca, 'label': 'Sulu Boya'},
+        {'tool': DrawingTool.keceli, 'label': 'Keçeli'},
+        {'tool': DrawingTool.firca_classic, 'label': 'Klasik'},
+        {'tool': DrawingTool.boya_kalemi, 'label': 'Kuru Fırça'},
+        {'tool': DrawingTool.sprey, 'label': 'Sprey'},
+        {'tool': DrawingTool.yagli_boya, 'label': 'Yağlı Boya'},
+        {'tool': DrawingTool.gradyan_fircasi, 'label': 'Gradyan'},
+      ];
+    } else {
+      return const SizedBox.shrink();
+    }
+
     return Container(
-      height: 60, margin: const EdgeInsets.only(bottom: 8),
+      height: 60,
+      margin: const EdgeInsets.only(bottom: 4),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -625,55 +796,73 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         itemBuilder: (context, index) {
           final st = subTools[index];
           final tool = st['tool'] as DrawingTool;
-          bool isSelected = activeTool == tool;
+          final isSelected = activeTool == tool;
+
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: InkWell(
               borderRadius: BorderRadius.circular(30),
-              onTap: () => setState(() {
-                activeTool = tool;
-                if (currentMenuType == L.pencil) _lastPencilTool = tool;
-                else if (currentMenuType == L.brush) _lastBrushTool = tool;
-              }),
+              onTap: () {
+                setState(() {
+                  activeTool = tool;
+                  if (currentMenuType == 'Kalem') {
+                    _lastPencilTool = tool;
+                  } else if (currentMenuType == 'Fırça') {
+                    _lastBrushTool = tool;
+                  }
+                });
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected ? const Color(0xFFFFD166) : Colors.white,
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-                  boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
+                  boxShadow: isSelected
+                      ? null
+                      : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
                 ),
-                child: Center(child: Text(st['label'] as String, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12))),
+                child: Center(
+                  child: Text(
+                    st['label'] as String,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
               ),
             ),
           );
-        }
+        },
       ),
     );
   }
 
-  Widget _toolButton(DrawingTool tool, IconData icon, String label, {bool isMenu = false}) {
-    bool isSelected = (isMenu && currentMenuType == label && showSubToolMenu) || (!isMenu && activeTool == tool);
-    return GestureDetector(
-      onTap: () {
-        if (isMenu) {
-          if (currentMenuType == label) setState(() => showSubToolMenu = !showSubToolMenu);
-          else setState(() { showSubToolMenu = true; currentMenuType = label; activeTool = (label == L.brush) ? _lastBrushTool : _lastPencilTool; });
-        } else { setState(() { activeTool = tool; showSubToolMenu = false; currentMenuType = null; }); }
-      },
-      child: Column(
+  Widget _buildStrokeWidthSlider() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+        boxShadow: const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
+      ),
+      child: Row(
         children: [
-          Container(
-            width: 54, height: 54,
-            decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFFFFD166) : Colors.white,
-              border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-              boxShadow: isSelected ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4))],
-            ),
-            child: Icon(icon, color: const Color(0xFF2D2D2D), size: 28),
+          Text(
+            'Kalınlık',
+            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
           ),
-          const SizedBox(height: 4),
-          Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w900)),
+          Expanded(
+            child: Slider(
+              value: brushWidth,
+              min: 2.0,
+              max: 100.0,
+              activeColor: const Color(0xFF2D2D2D),
+              inactiveColor: const Color(0xFF2D2D2D).withOpacity(0.1),
+              onChanged: (v) => setState(() => brushWidth = v),
+            ),
+          ),
         ],
       ),
     );
@@ -686,55 +875,35 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         itemCount: palette.length,
-        itemBuilder: (context, index) => GestureDetector(
-          onTap: () => setState(() { secondaryColor = selectedColor; selectedColor = palette[index]; }),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            width: 36, height: 36,
-            decoration: BoxDecoration(
-              color: palette[index], shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFF2D2D2D), width: selectedColor == palette[index] ? 4 : 2),
-              boxShadow: selectedColor == palette[index] ? null : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
+        itemBuilder: (context, index) {
+          final color = palette[index];
+          final isSelected = selectedColor == color;
+
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedColor = color;
+              });
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF2D2D2D),
+                  width: isSelected ? 4 : 2,
+                ),
+                boxShadow: isSelected
+                    ? null
+                    : const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(2, 2))],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }
-}
-
-class ColoringPainter extends CustomPainter {
-  final ui.Image? template;
-  final List<PaintOp> operations;
-  final Color secondaryColor;
-  final ui.Image? cachedDrawing;
-  final int cachedCount;
-
-  ColoringPainter({this.template, required this.operations, required this.secondaryColor, this.cachedDrawing, this.cachedCount = 0});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (template == null) return;
-    final width = template!.width.toDouble();
-    final height = template!.height.toDouble();
-    double scale = math.min(size.width / width, size.height / height);
-    double offsetX = (size.width - width * scale) / 2;
-    double offsetY = (size.height - height * scale) / 2;
-
-    canvas.save();
-    canvas.translate(offsetX, offsetY);
-    canvas.scale(scale);
-
-    canvas.saveLayer(Rect.fromLTWH(0, 0, width, height), Paint());
-    if (cachedDrawing != null) canvas.drawImage(cachedDrawing!, Offset.zero, Paint());
-    for (int i = cachedCount; i < operations.length; i++) {
-      operations[i].draw(canvas, 1.0, secondaryColor);
-    }
-    canvas.drawImage(template!, Offset.zero, Paint()..blendMode = BlendMode.multiply);
-    canvas.restore();
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant ColoringPainter oldDelegate) => true;
 }

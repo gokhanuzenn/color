@@ -1,3 +1,14 @@
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.6.0")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+    }
+}
+
 allprojects {
     repositories {
         google()
@@ -5,32 +16,36 @@ allprojects {
     }
 }
 
+// BU KISIM TÜM KÜTÜPHANELERE "BENİM SDK SÜRÜMÜMÜ KULLAN" DER
 subprojects {
-    afterEvaluate {
-        val project = this
+    afterEvaluate { project ->
         if (project.extensions.findByName("android") != null) {
-            val android = project.extensions.getByName("android") as com.android.build.gradle.BaseExtension
-            
-            android.compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
+            configure<com.android.build.gradle.LibraryExtension> {
+                compileSdk = 35
+                defaultConfig {
+                    minSdk = 21
+                }
             }
         }
     }
+}
 
-    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = "17"
+// Tüm projeler için Flutter yolunu zorla tanımla
+subprojects {
+    afterEvaluate { project ->
+        if (project.extensions.findByName("android") != null) {
+            // Gal'ı gördüğünde Flutter eklentisini inject et
+            if (project.name == "gal") {
+                project.apply(plugin = "dev.flutter.flutter-gradle-plugin")
+            }
+            
+            // SDK sürümünü garanti altına al
+            project.extensions.configure<com.android.build.gradle.LibraryExtension>("android") {
+                compileSdk = 35
+                defaultConfig {
+                    minSdk = 21
+                }
+            }
         }
     }
-}
-
-subprojects {
-    if (project.name != "app") {
-        project.evaluationDependsOn(":app")
-    }
-}
-
-tasks.register<Delete>("clean") {
-    delete(rootProject.layout.buildDirectory)
 }
