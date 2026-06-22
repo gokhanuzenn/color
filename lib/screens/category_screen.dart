@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/image_selection_screen.dart';
-import 'package:color_world/mock_billing.dart';
+import 'package:color_world/billing_manager.dart';
 import 'package:color_world/utils/localization.dart';
 
 class ColoringCategory {
@@ -43,7 +43,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     ColoringCategory(id: 'uzay', count: 25, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
     ColoringCategory(id: 'dinozor', count: 22, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
     ColoringCategory(id: 'okyanus', count: 20, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
-    ColoringCategory(id: 'masal', count: 2, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: 'masal', count: 5, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
     ColoringCategory(id: 'robot', count: 15, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
     ColoringCategory(id: 'kahraman', count: 19, themeColor: const Color(0xFFE53935), icon: Icons.shield),
     ColoringCategory(id: 'ciftlik', count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
@@ -51,7 +51,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
     ColoringCategory(id: 'harfler', count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
     ColoringCategory(id: 'oyuncak', count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
     ColoringCategory(id: 'insaat', count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
-    ColoringCategory(id: 'canavar', count: 1, themeColor: const Color(0xFF795548), icon: Icons.dangerous),
+    ColoringCategory(id: 'canavar', count: 5, themeColor: const Color(0xFF795548), icon: Icons.dangerous),
   ];
 
   @override
@@ -67,12 +67,12 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   Future<void> _checkAdFreeStatus() async {
-    final status = await MockBillingManager.isAdFree();
+    final status = await BillingManager.isAdFree();
     setState(() => _isAdFree = status);
   }
 
   Future<void> _handlePurchase() async {
-    await MockBillingManager.purchaseAdFree();
+    await BillingManager.purchaseAdFree();
     await _checkAdFreeStatus();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -155,7 +155,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       child: GestureDetector(
                         onTap: () async {
                           if (_promoController.text.trim().toUpperCase() == _validPromoCode.toUpperCase()) {
-                            await MockBillingManager.purchaseAdFree();
+                            await BillingManager.purchaseAdFree();
                             await _checkAdFreeStatus();
                             if (mounted) {
                               Navigator.pop(context);
@@ -244,7 +244,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
               ),
               itemCount: categories.length,
               itemBuilder: (context, index) {
-                return CategoryCard(category: categories[index]);
+                return CategoryCard(categories[index]);
               },
             ),
           ),
@@ -289,7 +289,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
 class CategoryCard extends StatelessWidget {
   final ColoringCategory category;
 
-  const CategoryCard({super.key, required this.category});
+  const CategoryCard(this.category, {super.key});
 
   @override
   Widget build(BuildContext context) {
