@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/color/">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A neubrutalist coloring world for kids.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Color World">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <title>Color World</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body {
+      background-color: #FDFBF7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+    }
+    .loading-container {
+      text-align: center;
+      padding: 40px;
+      background: white;
+      border: 4px solid #2D2D2D;
+      box-shadow: 10px 10px 0px #2D2D2D;
+    }
+    .loader {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #06D6A0;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-container">
+    <div class="loader"></div>
+    <h2 style="margin: 0; font-weight: 900;">INITIALIZING COLOR WORLD...</h2>
+  </div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

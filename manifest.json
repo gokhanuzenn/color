@@ -1,0 +1,23 @@
+{
+    "name": "color_world",
+    "short_name": "Color World",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FDFBF7",
+    "theme_color": "#E94E77",
+    "description": "A neubrutalist coloring world for kids.",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
