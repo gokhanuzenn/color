@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/image_selection_screen.dart';
-import 'package:color_world/mock_billing.dart';
+import 'package:color_world/billing_manager.dart';
 import 'package:color_world/utils/localization.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -38,6 +38,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
   bool _isMusicOn = true;
 
   static final List<ColoringCategory> categories = [
+<<<<<<< HEAD
     ColoringCategory(id: 'ciftlik', count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture)..titleOverride = 'Çiftlik',
     ColoringCategory(id: 'dinozor', count: 15, themeColor: const Color(0xFF4CAF50), icon: Icons.pets)..titleOverride = 'Dinozorlar',
     ColoringCategory(id: 'sevimli_dostlar', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets)..titleOverride = 'Sevimli Dostlar',
@@ -56,6 +57,28 @@ class _CategoryScreenState extends State<CategoryScreen> {
     ColoringCategory(id: 'letter', count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download)..titleOverride = 'Harfler',
     ColoringCategory(id: 'toy', count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys)..titleOverride = 'Oyuncaklar',
     ColoringCategory(id: 'construction', count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction)..titleOverride = 'İnşaat',
+=======
+    ColoringCategory(id: 'sevimli_dostlar', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
+    ColoringCategory(id: 'vahsi_dostlar', count: 11, themeColor: const Color(0xFF4CAF50), icon: Icons.nature),
+    ColoringCategory(id: 'kiz_karakter', count: 21, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
+    ColoringCategory(id: 'erkek_karakter', count: 20, themeColor: const Color(0xFF81D4FA), icon: Icons.face),
+    ColoringCategory(id: 'tasitlar', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
+    ColoringCategory(id: 'sayilar', count: 11, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
+    ColoringCategory(id: 'yiyecekler', count: 41, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
+    ColoringCategory(id: 'doga', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(id: 'uzay', count: 25, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
+    ColoringCategory(id: 'dinozor', count: 22, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
+    ColoringCategory(id: 'okyanus', count: 20, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
+    ColoringCategory(id: 'masal', count: 5, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: 'robot', count: 15, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
+    ColoringCategory(id: 'kahraman', count: 19, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: 'ciftlik', count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: 'meslekler', count: 31, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: 'harfler', count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: 'oyuncak', count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
+    ColoringCategory(id: 'insaat', count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
+    ColoringCategory(id: 'canavar', count: 5, themeColor: const Color(0xFF795548), icon: Icons.dangerous),
+>>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
   ];
 
   @override
@@ -108,13 +131,17 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   Future<void> _checkAdFreeStatus() async {
-    final status = await MockBillingManager.isAdFree();
+    final status = await BillingManager.isAdFree();
     setState(() => _isAdFree = status);
   }
 
   Future<void> _handlePurchase() async {
+<<<<<<< HEAD
     _playClickSound();
     await MockBillingManager.purchaseAdFree();
+=======
+    await BillingManager.purchaseAdFree();
+>>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
     await _checkAdFreeStatus();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.adsRemoved)));
@@ -173,7 +200,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         onTap: () async {
                           _playClickSound();
                           if (_promoController.text.trim().toUpperCase() == _validPromoCode.toUpperCase()) {
-                            await MockBillingManager.purchaseAdFree();
+                            await BillingManager.purchaseAdFree();
                             await _checkAdFreeStatus();
                             if (mounted) {
                               Navigator.pop(context);
@@ -218,6 +245,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
           ),
         ],
       ),
+<<<<<<< HEAD
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -226,6 +254,18 @@ class _CategoryScreenState extends State<CategoryScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Center(
                 child: Text(L.selectCategory, style: const TextStyle(color: Color(0xFF2D2D2D), fontSize: 16, fontWeight: FontWeight.bold)),
+=======
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Text(
+              L.selectCategory,
+              style: const TextStyle(
+                color: Color(0xFF2D2D2D),
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+>>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
               ),
             ),
           ),
@@ -238,6 +278,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 mainAxisSpacing: 16.0,
                 childAspectRatio: 0.85,
               ),
+<<<<<<< HEAD
               delegate: SliverChildBuilderDelegate(
                 (context, index) => CategoryCard(
                   category: categories[index], 
@@ -297,6 +338,43 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       ),
                     ),
                   ],
+=======
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                return CategoryCard(categories[index]);
+              },
+            ),
+          ),
+          if (!_isAdFree)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                onTap: _handlePurchase,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700),
+                    border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0xFF2D2D2D),
+                        offset: Offset(4, 4),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      "RuzgarveGoktug2026 - REKLAMLARI KALDIR",
+                      style: const TextStyle(
+                        color: Color(0xFF2D2D2D),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+>>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
                 ),
               ),
             ),
@@ -310,7 +388,11 @@ class CategoryCard extends StatelessWidget {
   final ColoringCategory category;
   final VoidCallback onTapCard;
 
+<<<<<<< HEAD
   const CategoryCard({super.key, required this.category, required this.onTapCard});
+=======
+  const CategoryCard(this.category, {super.key});
+>>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
 
   @override
   Widget build(BuildContext context) {

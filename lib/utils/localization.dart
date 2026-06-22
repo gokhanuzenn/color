@@ -1,13 +1,7 @@
 import 'dart:ui';
 
 class L {
-  static String get languageCode {
-    try {
-      return PlatformDispatcher.instance.locale.languageCode;
-    } catch (_) {
-      return 'en';
-    }
-  }
+  static String get languageCode => PlatformDispatcher.instance.locale.languageCode;
   static bool get isTr => languageCode == 'tr';
 
   static String get appTitle => isTr ? 'BOYAMA DÜNYASI' : 'COLOR WORLD';
@@ -18,7 +12,7 @@ class L {
   static String get confirm => isTr ? 'ONAYLA' : 'CONFIRM';
   static String get codeAccepted => isTr ? 'Tebrikler! Kod kabul edildi.' : 'Congratulations! Code accepted.';
   static String get invalidCode => isTr ? 'Geçersiz kod!' : 'Invalid code!';
-  static String get removeAds => isTr ? 'REKLAMLARI KALDIR (\$2.99)' : 'REMOVE ADS (\$2.99)';
+  static String get removeAds => isTr ? 'REKLAMLARI KALDIR ($2.99)' : 'REMOVE ADS ($2.99)';
   static String get adsRemoved => isTr ? 'Reklamlar kaldırıldı! Teşekkürler.' : 'Ads removed! Thank you.';
   static String get imagesCount => isTr ? 'GÖRSEL' : 'IMAGES';
   
@@ -47,6 +41,7 @@ class L {
   // Kategori isimlerini senin klasör listendeki yeni isimlerle ve İngilizce karşılıklarıyla güncelledik:
   static String categoryName(String id) {
     switch (id) {
+<<<<<<< HEAD
       case 'sevimli_dostlar': return isTr ? 'Hayvanlar' : 'Animals';
       case 'vahsi_dostlar': return isTr ? 'Vahşi Dostlar' : 'Wild Friends';
       case 'dinozor': return isTr ? 'Dinozor Dünyası' : 'Dinosaur World';
@@ -67,6 +62,29 @@ class L {
       case 'robot': return isTr ? 'Robotlar' : 'Robots';
       case 'emoji': return isTr ? 'Emojiler' : 'Emojis';
       case 'tamamlayici': return isTr ? 'Sihirli Dünya' : 'Magic World';
+=======
+      case 'sevimli_dostlar': return isTr ? 'Sevimli Dostlar' : 'Cute Animals';
+      case 'vahsi_dostlar': return isTr ? 'Vahşi Dostlar' : 'Wild Animals';
+      case 'kiz_karakter': return isTr ? 'Kız Karakter' : 'Girl Characters';
+      case 'erkek_karakter': return isTr ? 'Erkek Karakter' : 'Boy Characters';
+      case 'tasitlar': return isTr ? 'Taşıtlar' : 'Vehicles';
+      case 'sayilar': return isTr ? 'Sayılar' : 'Numbers';
+      case 'yiyecekler': return isTr ? 'Yiyecekler' : 'Food';
+      case 'doga': return isTr ? 'Doğa' : 'Nature';
+      case 'uzay': return isTr ? 'Uzay Maceraları' : 'Space Adventures';
+      case 'dinozor': return isTr ? 'Dinozor Dünyası' : 'Dinosaur World';
+      case 'okyanus': return isTr ? 'Okyanus Dünyası' : 'Ocean World';
+      case 'masal': return isTr ? 'Masal Dünyası' : 'Fairy Tale World';
+      case 'robot': return isTr ? 'Robotlar' : 'Robots';
+      case 'emo_kategori': return isTr ? 'Emojiler' : 'Emojis';
+      case 'kahraman': return isTr ? 'Kahramanlar' : 'Heroes';
+      case 'ciftlik': return isTr ? 'Çiftlik' : 'Farm';
+      case 'meslekler': return isTr ? 'Meslekler' : 'Jobs';
+      case 'harfler': return isTr ? 'Harfler Dünyası' : 'World of Letters';
+      case 'oyuncak': return isTr ? 'Oyuncak Dünyası' : 'Toy World';
+      case 'insaat': return isTr ? 'İş Arabaları' : 'Construction';
+      case 'canavar': return isTr ? 'Canavarlar' : 'Monsters';
+>>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
       default: return id;
     }
   }

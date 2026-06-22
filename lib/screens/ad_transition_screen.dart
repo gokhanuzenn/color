@@ -1,7 +1,8 @@
+import "package:flutter/foundation.dart";
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:color_world/screens/coloring_canvas_screen.dart';
-import 'package:color_world/mock_billing.dart';
+import 'package:color_world/billing_manager.dart';
 import 'package:color_world/utils/localization.dart';
 
 class AdTransitionScreen extends StatefulWidget {
@@ -24,7 +25,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
   bool _isCheckingBilling = true;
 
   // Google Test Interstitial Ad Unit ID
-  final String _adUnitId = 'ca-app-pub-3940256099942544/1033173712';
+  final String _adUnitId = 'ca-app-pub-9171283684710932/1033173712';
 
   @override
   void initState() {
@@ -33,14 +34,14 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
   }
 
   Future<void> _init() async {
-    final adFree = await MockBillingManager.isAdFree();
+    final adFree = await BillingManager.isAdFree();
     if (!mounted) return;
-
+    
     if (adFree) {
       _navigateToCanvas();
     } else {
       setState(() => _isCheckingBilling = false);
-      _loadInterstitialAd();
+      if (!kIsWeb) _loadInterstitialAd(); else _navigateToCanvas();
     }
   }
 
@@ -50,10 +51,6 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
-          if (!mounted) {
-            ad.dispose();
-            return;
-          }
           setState(() {
             _interstitialAd = ad;
             _isAdLoaded = true;
@@ -70,7 +67,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
 
   void _showInterstitialAd() {
     if (_interstitialAd == null) return;
-
+    
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();

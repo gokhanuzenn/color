@@ -1,7 +1,7 @@
+import "package:flutter/foundation.dart";
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -9,10 +9,11 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:color_world/mock_billing.dart';
-import 'package:gal/gal.dart';
+import 'package:color_world/billing_manager.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:color_world/utils/localization.dart';
+import 'dart:io' if (dart.library.html) 'dart:html';
 
 enum DrawingTool {
   kursun,
@@ -269,7 +270,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   int _pointerCount = 0;
 
   final List<List<PaintOp>> _undoStack = [];
-  final List<List<PaintOp>> _redoStack = [];
+  final List<List<PaintOp>> _redoStack = [][];
 
   ui.Image? _cachedDrawing;
   int _lastCachedCount = 0;
@@ -305,7 +306,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Future<void> _initCanvas() async {
-    _isAdFree = await MockBillingManager.isAdFree();
+    _isAdFree = await BillingManager.isAdFree();
     if (!_isAdFree) {
       _startAdTimer();
     }
@@ -316,13 +317,13 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   Future<void> _startAdTimer() async {
     _adTimer?.cancel();
     _adTimer = Timer.periodic(const Duration(seconds: 180), (timer) async {
-      final adFree = await MockBillingManager.isAdFree();
+      final adFree = await BillingManager.isAdFree();
       if (adFree) {
         _isAdFree = true;
         _adTimer?.cancel();
         return;
       }
-      _loadInterstitialAd();
+      if (!kIsWeb) _loadInterstitialAd();
     });
   }
 
@@ -339,7 +340,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           _showInterstitialAd();
         },
         onAdFailedToLoad: (error) {
-          debugPrint('InterstitialAd failed to load: $error');
+          debugPrint('InterstitialAd failed to load: \$error');
           _isAdLoading = false;
         },
       ),
@@ -376,23 +377,26 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) _saveProgress();
   }
 
-  Future<File> _getSaveFile() async {
+  Future<dynamic> _getSaveFile() async {
+    if (kIsWeb) return null;
     final directory = await getApplicationDocumentsDirectory();
-    return File('${directory.path}/drawing_${widget.templateId}.json');
+    return File('\${directory.path}/drawing_\${widget.templateId}.json');
   }
 
   Future<void> _saveProgress() async {
+    if (kIsWeb) return;
     try {
       final file = await _getSaveFile();
       final List<Map<String, dynamic>> jsonData = operations.map((op) => op.toJson()).toList();
       await file.writeAsString(jsonEncode(jsonData));
-    } catch (e) { debugPrint('Error saving progress: $e'); }
+    } catch (e) { debugPrint('Error saving progress: \$e'); }
   }
 
   Future<void> _loadProgress() async {
+    if (kIsWeb) return;
     try {
       final file = await _getSaveFile();
-      if (await file.exists()) {
+      if (file != null && await file.exists()) {
         final String content = await file.readAsString();
         final List decoded = jsonDecode(content);
         setState(() {
@@ -400,7 +404,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         });
         _updateCache();
       }
-    } catch (e) { debugPrint('Error loading progress: $e'); }
+    } catch (e) { debugPrint('Error loading progress: \$e'); }
   }
 
   Future<void> _loadTemplate() async {
@@ -482,12 +486,12 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      await Gal.putImageBytes(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
+      final result = await ImageGallerySaver.saveImage(pngBytes, name: "color_world_\${DateTime.now().millisecondsSinceEpoch}");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.imageSaved)));
       }
     } catch (e) {
-      debugPrint('Error exporting image: $e');
+      debugPrint('Error exporting image: \$e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.errorSaving)));
       }
