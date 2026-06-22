@@ -32,26 +32,26 @@ class _CategoryScreenState extends State<CategoryScreen> {
   final String _validPromoCode = 'RuzgarveGoktug2026';
 
   static final List<ColoringCategory> categories = [
-    ColoringCategory(id: 'animal', count: 20, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
-    ColoringCategory(id: 'girl', count: 20, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
-    ColoringCategory(id: 'car', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
-    ColoringCategory(id: 'number', count: 9, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
-    ColoringCategory(id: 'food', count: 11, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
-    ColoringCategory(id: 'nature', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
-    ColoringCategory(id: 'space', count: 1, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
-    ColoringCategory(id: 'dino', count: 1, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
-    ColoringCategory(id: 'magic', count: 1, themeColor: const Color(0xFFE91E63), icon: Icons.auto_awesome),
-    ColoringCategory(id: 'sea', count: 12, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
-    ColoringCategory(id: 'fairy', count: 1, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
-    ColoringCategory(id: 'robot', count: 2, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
-    ColoringCategory(id: 'flower', count: 11, themeColor: const Color(0xFF8BC34A), icon: Icons.local_florist),
-    ColoringCategory(id: 'emoji', count: 1, themeColor: const Color(0xFFFF9800), icon: Icons.mood),
-    ColoringCategory(id: 'hero', count: 1, themeColor: const Color(0xFFE53935), icon: Icons.shield),
-    ColoringCategory(id: 'farm', count: 1, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
-    ColoringCategory(id: 'job', count: 1, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
-    ColoringCategory(id: 'letter', count: 1, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
-    ColoringCategory(id: 'toy', count: 1, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
-    ColoringCategory(id: 'construction', count: 1, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
+    ColoringCategory(id: 'sevimli_dostlar', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
+    ColoringCategory(id: 'vahsi_dostlar', count: 11, themeColor: const Color(0xFF4CAF50), icon: Icons.nature),
+    ColoringCategory(id: 'kiz_karakter', count: 21, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
+    ColoringCategory(id: 'erkek_karakter', count: 20, themeColor: const Color(0xFF81D4FA), icon: Icons.face),
+    ColoringCategory(id: 'tasitlar', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
+    ColoringCategory(id: 'sayilar', count: 11, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
+    ColoringCategory(id: 'yiyecekler', count: 41, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
+    ColoringCategory(id: 'doga', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(id: 'uzay', count: 25, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
+    ColoringCategory(id: 'dinozor', count: 22, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
+    ColoringCategory(id: 'okyanus', count: 20, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
+    ColoringCategory(id: 'masal', count: 2, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: 'robot', count: 15, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
+    ColoringCategory(id: 'kahraman', count: 19, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: 'ciftlik', count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: 'meslekler', count: 31, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: 'harfler', count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: 'oyuncak', count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
+    ColoringCategory(id: 'insaat', count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
+    ColoringCategory(id: 'canavar', count: 1, themeColor: const Color(0xFF795548), icon: Icons.dangerous),
   ];
 
   @override
@@ -222,38 +222,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
       ),
       body: Column(
         children: [
-          if (!_isAdFree)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GestureDetector(
-                onTap: _handlePurchase,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD700),
-                    border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0xFF2D2D2D),
-                        offset: Offset(4, 4),
-                        blurRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      L.removeAds,
-                      style: const TextStyle(
-                        color: Color(0xFF2D2D2D),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: Text(
@@ -280,6 +248,38 @@ class _CategoryScreenState extends State<CategoryScreen> {
               },
             ),
           ),
+          if (!_isAdFree)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: GestureDetector(
+                onTap: _handlePurchase,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700),
+                    border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0xFF2D2D2D),
+                        offset: Offset(4, 4),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      "RuzgarveGoktug2026 - REKLAMLARI KALDIR",
+                      style: const TextStyle(
+                        color: Color(0xFF2D2D2D),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );

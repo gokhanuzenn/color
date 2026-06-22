@@ -35,7 +35,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
   Future<void> _init() async {
     final adFree = await MockBillingManager.isAdFree();
     if (!mounted) return;
-
+    
     if (adFree) {
       _navigateToCanvas();
     } else {
@@ -50,10 +50,6 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
-          if (!mounted) {
-            ad.dispose();
-            return;
-          }
           setState(() {
             _interstitialAd = ad;
             _isAdLoaded = true;
@@ -70,7 +66,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
 
   void _showInterstitialAd() {
     if (_interstitialAd == null) return;
-
+    
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
