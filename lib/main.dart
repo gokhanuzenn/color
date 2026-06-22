@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:color_world/screens/category_screen.dart';
 import 'package:color_world/billing_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MobileAds.instance.initialize();
   
-  final billingManager = BillingManager();
-  billingManager.initialize();
+  if (!kIsWeb) {
+    await MobileAds.instance.initialize();
+    final billingManager = BillingManager();
+    billingManager.initialize();
+  }
   
   runApp(const ColorWorldApp());
 }

@@ -1,3 +1,4 @@
+import "package:flutter/foundation.dart";
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:color_world/screens/coloring_canvas_screen.dart';
@@ -40,7 +41,7 @@ class _AdTransitionScreenState extends State<AdTransitionScreen> {
       _navigateToCanvas();
     } else {
       setState(() => _isCheckingBilling = false);
-      _loadInterstitialAd();
+      if (!kIsWeb) _loadInterstitialAd(); else _navigateToCanvas();
     }
   }
 

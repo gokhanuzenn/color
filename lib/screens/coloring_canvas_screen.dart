@@ -1,3 +1,4 @@
+import "package:flutter/foundation.dart";
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'dart:convert';
@@ -9,7 +10,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:color_world/mock_billing.dart';
+import 'package:color_world/billing_manager.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:color_world/utils/localization.dart';
@@ -265,7 +266,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Future<void> _initCanvas() async {
-    _isAdFree = await MockBillingManager.isAdFree();
+    _isAdFree = await BillingManager.isAdFree();
     if (!_isAdFree) {
       _startAdTimer();
     }
@@ -276,13 +277,13 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   Future<void> _startAdTimer() async {
     _adTimer?.cancel();
     _adTimer = Timer.periodic(const Duration(seconds: 180), (timer) async {
-      final adFree = await MockBillingManager.isAdFree();
+      final adFree = await BillingManager.isAdFree();
       if (adFree) {
         _isAdFree = true;
         _adTimer?.cancel();
         return;
       }
-      _loadInterstitialAd();
+      if (!kIsWeb) _loadInterstitialAd();
     });
   }
 
