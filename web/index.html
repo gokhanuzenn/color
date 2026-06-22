@@ -7,15 +7,17 @@
   <title>Color World</title>
 </head>
 <body>
-  <div id="status">Syncing...</div>
+  <div id="status" style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: sans-serif; font-weight: bold; color: #2D2D2D;">Syncing...</div>
   <script src="flutter.js" defer></script>
   <script>
     window.addEventListener('load', function(ev) {
-      document.getElementById('status').innerText = 'Loading Engine...';
+      var status = document.getElementById('status');
+      status.innerText = 'Loading Engine...';
       _flutter.loader.loadEntrypoint({
         onEntrypointLoaded: function(engineInitializer) {
+          status.innerText = 'Initializing...';
           engineInitializer.initializeEngine().then(function(appRunner) {
-            document.getElementById('status').innerText = 'Running App...';
+            status.innerText = 'Running App...';
             appRunner.runApp();
           });
         }
