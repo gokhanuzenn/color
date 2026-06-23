@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/image_selection_screen.dart';
-import 'package:color_world/billing_manager.dart';
+import 'package:color_world/mock_billing_manager.dart';
 import 'package:color_world/utils/localization.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -9,9 +9,8 @@ class ColoringCategory {
   final int count;
   final Color themeColor;
   final IconData icon;
-  String? titleOverride;
 
-  String get title => titleOverride ?? L.categoryName(id);
+  String get title => L.categoryName(id);
 
   ColoringCategory({
     required this.id,
@@ -32,60 +31,68 @@ class _CategoryScreenState extends State<CategoryScreen> {
   bool _isAdFree = false;
   final TextEditingController _promoController = TextEditingController();
   final String _validPromoCode = 'RuzgarveGoktug2026';
-
-  final AudioPlayer _bgMusicPlayer = AudioPlayer();
-  final AudioPlayer _sfxPlayer = AudioPlayer();
-  bool _isMusicOn = true;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   static final List<ColoringCategory> categories = [
-<<<<<<< HEAD
-    ColoringCategory(id: 'ciftlik', count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture)..titleOverride = 'Çiftlik',
-    ColoringCategory(id: 'dinozor', count: 15, themeColor: const Color(0xFF4CAF50), icon: Icons.pets)..titleOverride = 'Dinozorlar',
-    ColoringCategory(id: 'sevimli_dostlar', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets)..titleOverride = 'Sevimli Dostlar',
-    ColoringCategory(id: 'vahsi_dostlar', count: 11, themeColor: const Color(0xFFE53935), icon: Icons.nature_people)..titleOverride = 'Vahşi Dostlar',
-    ColoringCategory(id: 'girl', count: 22, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural)..titleOverride = 'Kız Karakterler',
-    ColoringCategory(id: 'car', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car)..titleOverride = 'Taşıtlar',
-    ColoringCategory(id: 'number', count: 11, themeColor: const Color(0xFFFFB347), icon: Icons.pin)..titleOverride = 'Sayılar',
-    ColoringCategory(id: 'food', count: 41, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant)..titleOverride = 'Yiyecekler',
-    ColoringCategory(id: 'nature', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature)..titleOverride = 'Doğa',
-    ColoringCategory(id: 'space', count: 26, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch)..titleOverride = 'Uzay',
-    ColoringCategory(id: 'sea', count: 20, themeColor: const Color(0xFF03A9F4), icon: Icons.water)..titleOverride = 'Okyanus / Deniz',
-    ColoringCategory(id: 'robot', count: 15, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy)..titleOverride = 'Robotlar',
-    ColoringCategory(id: 'emoji', count: 15, themeColor: const Color(0xFFFF9800), icon: Icons.mood)..titleOverride = 'Emojiler',
-    ColoringCategory(id: 'hero', count: 20, themeColor: const Color(0xFFE53935), icon: Icons.shield)..titleOverride = 'Erkek Kahramanlar',
-    ColoringCategory(id: 'job', count: 31, themeColor: const Color(0xFF00ACC1), icon: Icons.work)..titleOverride = 'Meslekler',
-    ColoringCategory(id: 'letter', count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download)..titleOverride = 'Harfler',
-    ColoringCategory(id: 'toy', count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys)..titleOverride = 'Oyuncaklar',
-    ColoringCategory(id: 'construction', count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction)..titleOverride = 'İnşaat',
-=======
-    ColoringCategory(id: 'sevimli_dostlar', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
-    ColoringCategory(id: 'vahsi_dostlar', count: 11, themeColor: const Color(0xFF4CAF50), icon: Icons.nature),
-    ColoringCategory(id: 'kiz_karakter', count: 21, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
-    ColoringCategory(id: 'erkek_karakter', count: 20, themeColor: const Color(0xFF81D4FA), icon: Icons.face),
-    ColoringCategory(id: 'tasitlar', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
-    ColoringCategory(id: 'sayilar', count: 11, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
-    ColoringCategory(id: 'yiyecekler', count: 41, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
-    ColoringCategory(id: 'doga', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
-    ColoringCategory(id: 'uzay', count: 25, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
-    ColoringCategory(id: 'dinozor', count: 22, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
-    ColoringCategory(id: 'okyanus', count: 20, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
-    ColoringCategory(id: 'masal', count: 5, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
-    ColoringCategory(id: 'robot', count: 15, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
-    ColoringCategory(id: 'kahraman', count: 19, themeColor: const Color(0xFFE53935), icon: Icons.shield),
-    ColoringCategory(id: 'ciftlik', count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
-    ColoringCategory(id: 'meslekler', count: 31, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
-    ColoringCategory(id: 'harfler', count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
-    ColoringCategory(id: 'oyuncak', count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
-    ColoringCategory(id: 'insaat', count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
-    ColoringCategory(id: 'canavar', count: 5, themeColor: const Color(0xFF795548), icon: Icons.dangerous),
->>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
+    ColoringCategory(id: sevimli_dostlar, count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
+    ColoringCategory(id: vahsi_dostlar, count: 11, themeColor: const Color(0xFF4CAF50), icon: Icons.nature),
+    ColoringCategory(id: kiz_karakter, count: 22, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
+    ColoringCategory(id: erkek_karakter, count: 20, themeColor: const Color(0xFF81D4FA), icon: Icons.face),
+    ColoringCategory(id: tasitlar, count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
+    ColoringCategory(id: sayilar, count: 11, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
+    ColoringCategory(id: yiyecekler, count: 41, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
+    ColoringCategory(id: doga, count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(id: uzay, count: 26, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
+    ColoringCategory(id: dinozor, count: 22, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
+    ColoringCategory(id: okyanus, count: 20, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
+    ColoringCategory(id: robot, count: 15, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
+    ColoringCategory(id: emo_kategori, count: 15, themeColor: const Color(0xFFFFCC00), icon: Icons.emoji_emotions),
+    ColoringCategory(id: kahraman, count: 19, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: ciftlik, count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: meslekler, count: 31, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: harfler, count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: oyuncak, count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
+    ColoringCategory(id: insaat, count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
+    ColoringCategory(id: masal, count: 5, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: canavar, count: 5, themeColor: const Color(0xFF795548), icon: Icons.dangerous),
   ];
 
   @override
   void initState() {
     super.initState();
     _checkAdFreeStatus();
-    _startBackgroundMusic();
+  }
+
+  @override
+  void dispose() {
+    _promoController.dispose();
+    _audioPlayer.dispose();
+    super.dispose();
+  }
+
+  Future<void> _playClickSound() async {
+    try {
+      await _audioPlayer.play(AssetSource('sounds/click.mp3'));
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
+  }
+
+  Future<void> _checkAdFreeStatus() async {
+    final status = await MockBillingManager.isAdFree();
+    if (!mounted) return;
+    setState(() => _isAdFree = status);
+  }
+
+  Future<void> _handlePurchase() async {
+    await _playClickSound();
+    await MockBillingManager.purchaseAdFree();
+    await _checkAdFreeStatus();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(L.adsRemoved)),
+      );
+    }
   }
 
   void _navigateToSelection(ColoringCategory category) {
@@ -96,56 +103,11 @@ class _CategoryScreenState extends State<CategoryScreen> {
         builder: (context) => ImageSelectionScreen(
           categoryId: category.id,
           categoryTitle: category.title,
-          // Artık count göndermiyoruz, kod otomatik sayacak
+          themeColor: category.themeColor,
+          templateCount: category.count,
         ),
       ),
     );
-  }
-
-  Future<void> _startBackgroundMusic() async {
-    _bgMusicPlayer.setReleaseMode(ReleaseMode.loop);
-    await _bgMusicPlayer.play(AssetSource('audio/bg_music.mp3'));
-  }
-
-  Future<void> _playClickSound() async {
-    await _sfxPlayer.play(AssetSource('audio/pop.mp3'));
-  }
-
-  void _toggleMusic() {
-    setState(() {
-      _isMusicOn = !_isMusicOn;
-      if (_isMusicOn) {
-        _bgMusicPlayer.resume();
-      } else {
-        _bgMusicPlayer.pause();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _promoController.dispose();
-    _bgMusicPlayer.dispose();
-    _sfxPlayer.dispose();
-    super.dispose();
-  }
-
-  Future<void> _checkAdFreeStatus() async {
-    final status = await BillingManager.isAdFree();
-    setState(() => _isAdFree = status);
-  }
-
-  Future<void> _handlePurchase() async {
-<<<<<<< HEAD
-    _playClickSound();
-    await MockBillingManager.purchaseAdFree();
-=======
-    await BillingManager.purchaseAdFree();
->>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
-    await _checkAdFreeStatus();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.adsRemoved)));
-    }
   }
 
   void _showPromoDialog() {
@@ -160,12 +122,25 @@ class _CategoryScreenState extends State<CategoryScreen> {
             decoration: BoxDecoration(
               color: const Color(0xFFFDFBF7),
               border: Border.all(color: const Color(0xFF2D2D2D), width: 4),
-              boxShadow: const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(8, 8), blurRadius: 0)],
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0xFF2D2D2D),
+                  offset: Offset(8, 8),
+                  blurRadius: 0,
+                ),
+              ],
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(L.promoCode, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF2D2D2D))),
+                Text(
+                  L.promoCode,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2D2D2D),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 TextField(
                   controller: _promoController,
@@ -173,8 +148,14 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     hintText: L.enterCode,
                     fillColor: Colors.white,
                     filled: true,
-                    enabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2D2D2D), width: 3)),
-                    focusedBorder: const OutlineInputBorder(borderSide: BorderSide(color: Color(0xFF2D2D2D), width: 3)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D), width: 3),
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFF2D2D2D), width: 3),
+                      borderRadius: BorderRadius.circular(0),
+                    ),
                   ),
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
@@ -189,8 +170,16 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFF2D2D2D), width: 3)),
-                          child: Center(child: Text(L.cancel, style: const TextStyle(fontWeight: FontWeight.w900))),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                          ),
+                          child: Center(
+                            child: Text(
+                              L.cancel,
+                              style: const TextStyle(fontWeight: FontWeight.w900),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -198,24 +187,36 @@ class _CategoryScreenState extends State<CategoryScreen> {
                     Expanded(
                       child: GestureDetector(
                         onTap: () async {
-                          _playClickSound();
+                          await _playClickSound();
                           if (_promoController.text.trim().toUpperCase() == _validPromoCode.toUpperCase()) {
-                            await BillingManager.purchaseAdFree();
+                            await MockBillingManager.purchaseAdFree();
                             await _checkAdFreeStatus();
                             if (mounted) {
                               Navigator.pop(context);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.codeAccepted)));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(L.codeAccepted)),
+                              );
                             }
                           } else {
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.invalidCode)));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(L.invalidCode)),
+                              );
                             }
                           }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(color: const Color(0xFF06D6A0), border: Border.all(color: const Color(0xFF2D2D2D), width: 3)),
-                          child: Center(child: Text(L.confirm, style: const TextStyle(fontWeight: FontWeight.w900))),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF06D6A0),
+                            border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
+                          ),
+                          child: Center(
+                            child: Text(
+                              L.confirm,
+                              style: const TextStyle(fontWeight: FontWeight.w900),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -237,15 +238,22 @@ class _CategoryScreenState extends State<CategoryScreen> {
         backgroundColor: const Color(0xFFFDFBF7),
         elevation: 0,
         centerTitle: true,
-        title: Text(L.appTitle, style: const TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, letterSpacing: 2.0, fontSize: 22)),
+        title: Text(
+          L.appTitle,
+          style: const TextStyle(
+            color: Color(0xFF2D2D2D),
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2.0,
+            fontSize: 22,
+          ),
+        ),
         actions: [
           IconButton(
-            icon: Icon(_isMusicOn ? Icons.music_note : Icons.music_off, color: const Color(0xFF2D2D2D), size: 28),
-            onPressed: _toggleMusic,
+            icon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF2D2D2D)),
+            onPressed: _showPromoDialog,
           ),
         ],
       ),
-<<<<<<< HEAD
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -254,18 +262,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Center(
                 child: Text(L.selectCategory, style: const TextStyle(color: Color(0xFF2D2D2D), fontSize: 16, fontWeight: FontWeight.bold)),
-=======
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Text(
-              L.selectCategory,
-              style: const TextStyle(
-                color: Color(0xFF2D2D2D),
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
->>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
               ),
             ),
           ),
@@ -278,17 +274,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 mainAxisSpacing: 16.0,
                 childAspectRatio: 0.85,
               ),
-<<<<<<< HEAD
               delegate: SliverChildBuilderDelegate(
                 (context, index) => CategoryCard(
-                  category: categories[index], 
+                  category: categories[index],
                   onTapCard: () => _navigateToSelection(categories[index]),
                 ),
                 childCount: categories.length,
               ),
             ),
           ),
-          // [DÜZELTME] Butonlar listenin en sonuna alındı, taşma hatası yapmaması için sütun (Column) yapısına çevrildi!
           if (!_isAdFree)
             SliverToBoxAdapter(
               child: Container(
@@ -311,7 +305,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           children: [
                             Icon(Icons.star, color: Color(0xFF2D2D2D), size: 18),
                             SizedBox(width: 6),
-                            Text("REKLAMLARI SİL (\$2.99)", style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 14)),
+                            Text("REKLAMLARI S0L ($2.99)", style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 14)),
                           ],
                         ),
                       ),
@@ -338,43 +332,6 @@ class _CategoryScreenState extends State<CategoryScreen> {
                       ),
                     ),
                   ],
-=======
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                return CategoryCard(categories[index]);
-              },
-            ),
-          ),
-          if (!_isAdFree)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: GestureDetector(
-                onTap: _handlePurchase,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD700),
-                    border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0xFF2D2D2D),
-                        offset: Offset(4, 4),
-                        blurRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      "RuzgarveGoktug2026 - REKLAMLARI KALDIR",
-                      style: const TextStyle(
-                        color: Color(0xFF2D2D2D),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
->>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
                 ),
               ),
             ),
@@ -388,11 +345,7 @@ class CategoryCard extends StatelessWidget {
   final ColoringCategory category;
   final VoidCallback onTapCard;
 
-<<<<<<< HEAD
   const CategoryCard({super.key, required this.category, required this.onTapCard});
-=======
-  const CategoryCard(this.category, {super.key});
->>>>>>> 4dcdcbcbca073abc14945b66dd51b056f733ba87
 
   @override
   Widget build(BuildContext context) {
@@ -403,7 +356,13 @@ class CategoryCard extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(color: const Color(0xFF2D2D2D), width: 3),
-          boxShadow: const [BoxShadow(color: Color(0xFF2D2D2D), offset: Offset(4, 4), blurRadius: 0)],
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0xFF2D2D2D),
+              offset: Offset(4, 4),
+              blurRadius: 0,
+            ),
+          ],
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(21),
@@ -413,17 +372,42 @@ class CategoryCard extends StatelessWidget {
               Expanded(
                 child: Container(
                   color: category.themeColor.withOpacity(0.3),
-                  child: Center(child: Icon(category.icon, size: 64, color: category.themeColor.withOpacity(0.8))),
+                  child: Center(
+                    child: Icon(
+                      category.icon,
+                      size: 64,
+                      color: category.themeColor.withOpacity(0.8),
+                    ),
+                  ),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.all(12.0),
-                decoration: const BoxDecoration(border: Border(top: BorderSide(color: Color(0xFF2D2D2D), width: 3))),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Color(0xFF2D2D2D), width: 3),
+                  ),
+                ),
                 child: Column(
                   children: [
-                    Text(category.title.toUpperCase(), textAlign: TextAlign.center, style: const TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 13)),
+                    Text(
+                      category.title.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Color(0xFF2D2D2D),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('${category.count} ${L.imagesCount}', style: const TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.bold, fontSize: 10)),
+                    Text(
+                      '${category.count} ${L.imagesCount}',
+                      style: const TextStyle(
+                        color: Color(0xFF2D2D2D),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
                   ],
                 ),
               ),

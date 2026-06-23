@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/category_screen.dart';
-import 'package:color_world/mock_billing.dart';
+import 'package:color_world/billing_manager.dart';
 import 'package:color_world/utils/localization.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _checkAdFreeStatus() async {
-    final status = await MockBillingManager.isAdFree();
+    final status = await BillingManager.isAdFree();
     setState(() => _isAdFree = status);
   }
 

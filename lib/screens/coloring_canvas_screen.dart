@@ -9,11 +9,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:color_world/billing_manager.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:color_world/mock_billing_manager.dart';
+import 'package:gal/gal.dart';
 import 'package:color_world/utils/localization.dart';
-import 'dart:io' if (dart.library.html) 'dart:html';
+import 'dart:io' show File;
 
 enum DrawingTool {
   kursun,
@@ -83,7 +82,7 @@ class PathOp extends PaintOp {
   void draw(Canvas canvas, double parentOpacity, Color secondaryColor) {
     final finalOpacity = opacity * parentOpacity;
     final paint = Paint()
-      ..color = color.withValues(alpha: finalOpacity)
+      ..color = color.withOpacity(finalOpacity)
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
@@ -110,7 +109,7 @@ class PathOp extends PaintOp {
           DrawingTool.kursun: {'a': 0.8, 'w': 0.1},
         };
         final settings = config[tool] ?? {'a': 0.8, 'w': 0.1};
-        paint.color = color.withValues(alpha: finalOpacity * (settings['a'] as double));
+        paint.color = color.withOpacity(finalOpacity * (settings['a'] as double));
         paint.strokeWidth = strokeWidth * (settings['w'] as double);
         canvas.drawPath(path, paint);
         
@@ -124,7 +123,7 @@ class PathOp extends PaintOp {
         break;
 
       case DrawingTool.sulu_firca:
-        paint.color = color.withValues(alpha: finalOpacity * 0.08);
+        paint.color = color.withOpacity(finalOpacity * 0.08);
         paint.strokeWidth = strokeWidth;
         final rnd = math.Random(42);
         for (int i = 0; i < 3; i++) {
@@ -144,7 +143,7 @@ class PathOp extends PaintOp {
         break;
 
       case DrawingTool.firca_classic:
-        paint.color = color.withValues(alpha: finalOpacity * 0.7);
+        paint.color = color.withOpacity(finalOpacity * 0.7);
         const bristleCount = 10;
         for (int i = 0; i < bristleCount; i++) {
           final bPath = ui.Path();
@@ -162,7 +161,7 @@ class PathOp extends PaintOp {
         break;
 
       case DrawingTool.boya_kalemi:
-        paint.color = color.withValues(alpha: finalOpacity * 0.6);
+        paint.color = color.withOpacity(finalOpacity * 0.6);
         paint.strokeWidth = strokeWidth * 0.8;
         canvas.drawPath(path, paint);
         final rnd = math.Random(42);
@@ -170,7 +169,7 @@ class PathOp extends PaintOp {
         for (var p in points) {
           if (p != null) {
             for (int j = 0; j < 5; j++) {
-              grainPaint.color = color.withValues(alpha: finalOpacity * rnd.nextDouble() * 0.4);
+              grainPaint.color = color.withOpacity(finalOpacity * rnd.nextDouble() * 0.4);
               canvas.drawRect(Rect.fromLTWH(p.dx + (rnd.nextDouble()-0.5)*strokeWidth, p.dy + (rnd.nextDouble()-0.5)*strokeWidth, 2, 2), grainPaint);
             }
           }
@@ -266,7 +265,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   }
 
   Future<void> _initCanvas() async {
-    _isAdFree = await BillingManager.isAdFree();
+    _isAdFree = await MockBillingManager.isAdFree();
     if (!_isAdFree) {
       _startAdTimer();
     }
@@ -277,7 +276,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
   Future<void> _startAdTimer() async {
     _adTimer?.cancel();
     _adTimer = Timer.periodic(const Duration(seconds: 180), (timer) async {
-      final adFree = await BillingManager.isAdFree();
+      final adFree = await MockBillingManager.isAdFree();
       if (adFree) {
         _isAdFree = true;
         _adTimer?.cancel();
@@ -300,7 +299,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
           _showInterstitialAd();
         },
         onAdFailedToLoad: (error) {
-          debugPrint('InterstitialAd failed to load: \$error');
+          debugPrint('InterstitialAd failed to load: $error');
           _isAdLoading = false;
         },
       ),
@@ -337,19 +336,20 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) _saveProgress();
   }
 
-  Future<dynamic> _getSaveFile() async {
+  Future<File?> _getSaveFile() async {
     if (kIsWeb) return null;
     final directory = await getApplicationDocumentsDirectory();
-    return File('\${directory.path}/drawing_\${widget.templateId}.json');
+    return File('${directory.path}/drawing_${widget.templateId}.json');
   }
 
   Future<void> _saveProgress() async {
     if (kIsWeb) return;
     try {
       final file = await _getSaveFile();
+      if (file == null) return;
       final List<Map<String, dynamic>> jsonData = operations.map((op) => op.toJson()).toList();
       await file.writeAsString(jsonEncode(jsonData));
-    } catch (e) { debugPrint('Error saving progress: \$e'); }
+    } catch (e) { debugPrint('Error saving progress: $e'); }
   }
 
   Future<void> _loadProgress() async {
@@ -364,7 +364,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
         });
         _updateCache();
       }
-    } catch (e) { debugPrint('Error loading progress: \$e'); }
+    } catch (e) { debugPrint('Error loading progress: $e'); }
   }
 
   Future<void> _loadTemplate() async {
@@ -428,20 +428,20 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
 
   Future<void> _exportToGallery() async {
     try {
-      final status = await Permission.storage.request();
-      if (!status.isGranted) return;
+      final hasAccess = await Gal.requestAccess();
+      if (!hasAccess) return;
 
       RenderRepaintBoundary boundary = _repaintBoundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
       ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       Uint8List pngBytes = byteData!.buffer.asUint8List();
 
-      final result = await ImageGallerySaver.saveImage(pngBytes, name: "color_world_\${DateTime.now().millisecondsSinceEpoch}");
+      await Gal.putImageBytes(pngBytes, name: "color_world_${DateTime.now().millisecondsSinceEpoch}");
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.imageSaved)));
       }
     } catch (e) {
-      debugPrint('Error exporting image: \$e');
+      debugPrint('Error exporting image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(L.errorSaving)));
       }
@@ -593,7 +593,7 @@ class _ColoringCanvasScreenState extends State<ColoringCanvasScreen> with Widget
             child: Slider(
               value: brushWidth, min: 2.0, max: 100.0,
               activeColor: const Color(0xFF2D2D2D),
-              inactiveColor: const Color(0xFF2D2D2D).withValues(alpha: 0.1),
+              inactiveColor: const Color(0xFF2D2D2D).withOpacity(0.1),
               onChanged: (v) => setState(() => brushWidth = v),
             ),
           ),
