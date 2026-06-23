@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:color_world/screens/image_selection_screen.dart';
-import 'package:color_world/mock_billing_manager.dart';
+import 'package:color_world/billing_manager.dart';
 import 'package:color_world/utils/localization.dart';
 import 'package:audioplayers/audioplayers.dart';
 
@@ -34,27 +34,27 @@ class _CategoryScreenState extends State<CategoryScreen> {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   static final List<ColoringCategory> categories = [
-    ColoringCategory(id: sevimli_dostlar, count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
-    ColoringCategory(id: vahsi_dostlar, count: 11, themeColor: const Color(0xFF4CAF50), icon: Icons.nature),
-    ColoringCategory(id: kiz_karakter, count: 22, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
-    ColoringCategory(id: erkek_karakter, count: 20, themeColor: const Color(0xFF81D4FA), icon: Icons.face),
-    ColoringCategory(id: tasitlar, count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
-    ColoringCategory(id: sayilar, count: 11, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
-    ColoringCategory(id: yiyecekler, count: 41, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
-    ColoringCategory(id: doga, count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
-    ColoringCategory(id: uzay, count: 26, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
-    ColoringCategory(id: dinozor, count: 22, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
-    ColoringCategory(id: okyanus, count: 20, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
-    ColoringCategory(id: robot, count: 15, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
-    ColoringCategory(id: emo_kategori, count: 15, themeColor: const Color(0xFFFFCC00), icon: Icons.emoji_emotions),
-    ColoringCategory(id: kahraman, count: 19, themeColor: const Color(0xFFE53935), icon: Icons.shield),
-    ColoringCategory(id: ciftlik, count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
-    ColoringCategory(id: meslekler, count: 31, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
-    ColoringCategory(id: harfler, count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
-    ColoringCategory(id: oyuncak, count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
-    ColoringCategory(id: insaat, count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
-    ColoringCategory(id: masal, count: 5, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
-    ColoringCategory(id: canavar, count: 5, themeColor: const Color(0xFF795548), icon: Icons.dangerous),
+    ColoringCategory(id: 'sevimli_dostlar', count: 11, themeColor: const Color(0xFF6DA9E4), icon: Icons.pets),
+    ColoringCategory(id: 'vahsi_dostlar', count: 11, themeColor: const Color(0xFF4CAF50), icon: Icons.nature),
+    ColoringCategory(id: 'kiz_karakter', count: 22, themeColor: const Color(0xFFE6A8D7), icon: Icons.face_retouching_natural),
+    ColoringCategory(id: 'erkek_karakter', count: 20, themeColor: const Color(0xFF81D4FA), icon: Icons.face),
+    ColoringCategory(id: 'tasitlar', count: 11, themeColor: const Color(0xFFB39EB5), icon: Icons.directions_car),
+    ColoringCategory(id: 'sayilar', count: 11, themeColor: const Color(0xFFFFB347), icon: Icons.pin),
+    ColoringCategory(id: 'yiyecekler', count: 41, themeColor: const Color(0xFF98FB98), icon: Icons.restaurant),
+    ColoringCategory(id: 'doga', count: 11, themeColor: const Color(0xFFAEC6CF), icon: Icons.nature),
+    ColoringCategory(id: 'uzay', count: 26, themeColor: const Color(0xFF3F51B5), icon: Icons.rocket_launch),
+    ColoringCategory(id: 'dinozor', count: 22, themeColor: const Color(0xFF4CAF50), icon: Icons.pets),
+    ColoringCategory(id: 'okyanus', count: 20, themeColor: const Color(0xFF03A9F4), icon: Icons.water),
+    ColoringCategory(id: 'robot', count: 15, themeColor: const Color(0xFF607D8B), icon: Icons.smart_toy),
+    ColoringCategory(id: 'emo_kategori', count: 15, themeColor: const Color(0xFFFFCC00), icon: Icons.emoji_emotions),
+    ColoringCategory(id: 'kahraman', count: 19, themeColor: const Color(0xFFE53935), icon: Icons.shield),
+    ColoringCategory(id: 'ciftlik', count: 11, themeColor: const Color(0xFF8D6E63), icon: Icons.agriculture),
+    ColoringCategory(id: 'meslekler', count: 31, themeColor: const Color(0xFF00ACC1), icon: Icons.work),
+    ColoringCategory(id: 'harfler', count: 25, themeColor: const Color(0xFFFFD54F), icon: Icons.font_download),
+    ColoringCategory(id: 'oyuncak', count: 6, themeColor: const Color(0xFF26A69A), icon: Icons.toys),
+    ColoringCategory(id: 'insaat', count: 24, themeColor: const Color(0xFFFFCC00), icon: Icons.construction),
+    ColoringCategory(id: 'masal', count: 5, themeColor: const Color(0xFF9C27B0), icon: Icons.fort),
+    ColoringCategory(id: 'canavar', count: 5, themeColor: const Color(0xFF795548), icon: Icons.dangerous),
   ];
 
   @override
@@ -79,14 +79,15 @@ class _CategoryScreenState extends State<CategoryScreen> {
   }
 
   Future<void> _checkAdFreeStatus() async {
-    final status = await MockBillingManager.isAdFree();
+    final status = await BillingManager.isAdFree();
     if (!mounted) return;
     setState(() => _isAdFree = status);
   }
 
   Future<void> _handlePurchase() async {
     await _playClickSound();
-    await MockBillingManager.purchaseAdFree();
+    final billingManager = BillingManager();
+    await billingManager.purchaseAdFree();
     await _checkAdFreeStatus();
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -189,7 +190,17 @@ class _CategoryScreenState extends State<CategoryScreen> {
                         onTap: () async {
                           await _playClickSound();
                           if (_promoController.text.trim().toUpperCase() == _validPromoCode.toUpperCase()) {
-                            await MockBillingManager.purchaseAdFree();
+                            // Using standard billing manager for the logic
+                            // or any mechanism you prefer for "purchasing" via code.
+                            // Since MockBillingManager is missing, we use BillingManager logic if it supports it
+                            // or just update prefs directly here as a shortcut.
+                            // For simplicity, let's assume BillingManager is the source of truth now.
+                            // We can't call purchaseAdFree since it triggers real IAP.
+                            // Let's just set the preference directly to mock a "purchase".
+                            import 'package:shared_preferences/shared_preferences.dart';
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setBool('is_ad_free', true);
+                            
                             await _checkAdFreeStatus();
                             if (mounted) {
                               Navigator.pop(context);
@@ -305,7 +316,7 @@ class _CategoryScreenState extends State<CategoryScreen> {
                           children: [
                             Icon(Icons.star, color: Color(0xFF2D2D2D), size: 18),
                             SizedBox(width: 6),
-                            Text("REKLAMLARI S0L ($2.99)", style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 14)),
+                            Text("REKLAMLARI SİL ($2.99)", style: TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.w900, fontSize: 14)),
                           ],
                         ),
                       ),
