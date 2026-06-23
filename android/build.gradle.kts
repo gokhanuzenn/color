@@ -1,14 +1,3 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.6.0")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
-    }
-}
-
 allprojects {
     repositories {
         google()
@@ -16,36 +5,20 @@ allprojects {
     }
 }
 
-// BU KISIM TÜM KÜTÜPHANELERE "BENİM SDK SÜRÜMÜMÜ KULLAN" DER
+val newBuildDir: Directory =
+    rootProject.layout.buildDirectory
+        .dir("../../build")
+        .get()
+rootProject.layout.buildDirectory.value(newBuildDir)
+
 subprojects {
-    afterEvaluate { project ->
-        if (project.extensions.findByName("android") != null) {
-            configure<com.android.build.gradle.LibraryExtension> {
-                compileSdk = 35
-                defaultConfig {
-                    minSdk = 21
-                }
-            }
-        }
-    }
+    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
+    project.layout.buildDirectory.value(newSubprojectBuildDir)
+}
+subprojects {
+    project.evaluationDependsOn(":app")
 }
 
-// Tüm projeler için Flutter yolunu zorla tanımla
-subprojects {
-    afterEvaluate { project ->
-        if (project.extensions.findByName("android") != null) {
-            // Gal'ı gördüğünde Flutter eklentisini inject et
-            if (project.name == "gal") {
-                project.apply(plugin = "dev.flutter.flutter-gradle-plugin")
-            }
-            
-            // SDK sürümünü garanti altına al
-            project.extensions.configure<com.android.build.gradle.LibraryExtension>("android") {
-                compileSdk = 35
-                defaultConfig {
-                    minSdk = 21
-                }
-            }
-        }
-    }
+tasks.register<Delete>("clean") {
+    delete(rootProject.layout.buildDirectory)
 }
